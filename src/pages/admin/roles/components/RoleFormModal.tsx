@@ -57,9 +57,9 @@ export default function RoleFormModal({
   };
 
   const setConsoleAll = (enabled: boolean) => {
-    const consoleKeys = CONSOLE_PERMISSIONS.map((item) => item.key);
+    const consoleKeys = new Set<string>(CONSOLE_PERMISSIONS.map((item) => item.key));
     setPermissions((previous) => {
-      const withoutConsole = previous.filter((key) => !consoleKeys.includes(key));
+      const withoutConsole = previous.filter((key) => !consoleKeys.has(key));
       return enabled ? [...withoutConsole, ...consoleKeys] : withoutConsole;
     });
   };

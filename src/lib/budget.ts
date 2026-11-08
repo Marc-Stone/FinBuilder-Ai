@@ -7,6 +7,8 @@ import {
   type ExpenseEntry,
 } from "@/lib/finance";
 
+export type { BudgetGroupKey } from "@/lib/finance";
+
 export type BudgetGroupMeta = {
   key: BudgetGroupKey;
   label: string;
@@ -108,8 +110,13 @@ export type ActualTotals = {
   total: number;
 };
 
+type BudgetExpenseRow = {
+  categorie: string;
+  montant: number | string | null | undefined;
+};
+
 /** Aggregates real expenses (already filtered on the target period). */
-export function aggregateExpenses(rows: ExpenseEntry[]): ActualTotals {
+export function aggregateExpenses(rows: BudgetExpenseRow[]): ActualTotals {
   const parCategorie: Record<string, number> = {};
   const parGroupe: Record<BudgetGroupKey, number> = { besoins: 0, envies: 0, epargne: 0 };
   let total = 0;

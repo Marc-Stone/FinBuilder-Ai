@@ -108,9 +108,10 @@ function callout(doc: jsPDF, cursor: Cursor, label: string, text: string, tone: 
   doc.setFillColor(...(tone === "tip" ? COLORS.gold : COLORS.brand));
   doc.rect(MARGIN, top, 1.2, boxHeight, "F");
 
+  const labelColor: RGB = tone === "tip" ? [130, 92, 12] : COLORS.muted;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(7.4);
-  doc.setTextColor(...(tone === "tip" ? [130, 92, 12] : COLORS.muted));
+  doc.setTextColor(...labelColor);
   doc.text(clean(label).toUpperCase(), MARGIN + paddingX + 1, top + 5);
 
   doc.setFont("helvetica", "normal");

@@ -210,7 +210,9 @@ export default function LogementPage() {
               <p className="mt-0.5 text-[11px] leading-relaxed text-accent-800">{error}</p>
               <button
                 type="button"
-                onClick={load}
+                onClick={() => {
+                  void load();
+                }}
                 className="mt-2 inline-flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-md bg-foreground-950 px-3 py-1.5 text-[11px] font-semibold text-background-50 transition-colors hover:bg-foreground-900"
               >
                 <i className="ri-refresh-line text-xs" />

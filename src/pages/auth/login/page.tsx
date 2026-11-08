@@ -110,8 +110,7 @@ export default function LoginPage() {
           .from("profiles")
           .update({ derniere_connexion: new Date().toISOString() })
           .eq("id", signedUser.id)
-          .then(() => undefined)
-          .catch(() => undefined);
+          .then(() => undefined);
       }
 
       navigate(redirectTo, { replace: true });

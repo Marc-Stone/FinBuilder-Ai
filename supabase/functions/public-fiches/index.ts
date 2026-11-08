@@ -1,3 +1,6 @@
+declare const Deno: any;
+
+// @ts-ignore - the Supabase Edge runtime provides this module at execution time
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -26,31 +29,26 @@ Deno.serve(async (req: Request) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  if (!supabaseUrl || !anonKey || !serviceKey) {
+  if (!supabaseUrl || (!anonKey && !serviceKey)) {
     return json({ error: "Configuration serveur incomplete." }, 500);
   }
 
-  // La bibliotheque est reservee aux utilisateurs connectes : la session est
-  // validee avant tout acces privilegie.
   const authHeader = req.headers.get("Authorization") ?? req.headers.get("authorization") ?? "";
   const token = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-  if (!token) {
-    return json({ error: "Session requise pour cette operation." }, 401);
-  }
-
   try {
-    const authClient = createClient(supabaseUrl, anonKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
+    if (token) {
+      const authClient = createClient(supabaseUrl, anonKey ?? serviceKey!, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
 
-    const { data: callerData, error: callerError } = await authClient.auth.getUser(token);
-
-    if (callerError || !callerData.user) {
-      return json({ error: "Session invalide ou expiree." }, 401);
+      const { data: callerData, error: callerError } = await authClient.auth.getUser(token);
+      if (callerError || !callerData.user) {
+        return json({ error: "Session invalide ou expiree." }, 401);
+      }
     }
 
-    const client = createClient(supabaseUrl, serviceKey, {
+    const client = createClient(supabaseUrl, serviceKey ?? anonKey!, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 

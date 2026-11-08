@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinBuilder AI — Hors connexion</title>
+    <meta name="theme-color" content="#2563eb" />
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: #ffffff;
+        font-family: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+        color: #1c1f2a;
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        border: 1px solid #e8ebf2;
+        border-radius: 16px;
+        padding: 32px 28px;
+        text-align: center;
+        background: #ffffff;
+      }
+      .badge {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 18px;
+        border-radius: 14px;
+        background: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 20px;
+        letter-spacing: -0.5px;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #5b6273;
+      }
+      button {
+        margin-top: 22px;
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        padding: 12px 18px;
+        background: #2563eb;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      small {
+        display: block;
+        margin-top: 16px;
+        font-size: 12px;
+        color: #8a90a0;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <div class="badge">F</div>
+      <h1>Vous êtes hors connexion</h1>
+      <p>
+        FinBuilder AI a besoin d'une connexion pour mettre à jour vos données financières en toute
+        sécurité. Vérifiez votre réseau, puis réessayez.
+      </p>
+      <button type="button" onclick="window.location.reload()">Réessayer</button>
+      <small>Vos données enregistrées restent intactes.</small>
+    </main>
+  </body>
+</html>

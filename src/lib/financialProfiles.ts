@@ -1,0 +1,300 @@
+export type FinancialProfileType =
+  | "student"
+  | "employee"
+  | "entrepreneur"
+  | "freelancer"
+  | "family"
+  | "retired";
+
+export type SuggestedGoal = {
+  nom: string;
+  categorie: string;
+  cible: number;
+  mois: number;
+};
+
+export type ProfileHighlight = {
+  label: string;
+  hint: string;
+  icon: string;
+};
+
+export type FinancialProfileBlueprint = {
+  key: FinancialProfileType;
+  label: string;
+  icon: string;
+  emoji: string;
+  tagline: string;
+  objectif: string;
+  focus: string[];
+  adviceTitle: string;
+  advice: string;
+  tips: string[];
+  highlights: ProfileHighlight[];
+  incomeTypes: string[];
+  incomeLabel: string;
+  availableLabel: string;
+  goals: SuggestedGoal[];
+  assistantSuggestions: string[];
+  bubble: string;
+  ring: string;
+};
+
+export const financialProfileBlueprints: FinancialProfileBlueprint[] = [
+  {
+    key: "student",
+    label: "Étudiant",
+    icon: "ri-graduation-cap-line",
+    emoji: "🎓",
+    tagline: "Gérer un budget limité et financer mes études",
+    objectif: "Aider les étudiants à gérer un budget limité.",
+    focus: [
+      "Revenus faibles ou variables",
+      "Dépenses essentielles",
+      "Objectifs de formation",
+      "Épargne progressive",
+    ],
+    adviceTitle: "Voici comment gérer votre budget étudiant.",
+    advice:
+      "Avec des revenus limités, sécurisez d'abord le logement, le transport et la scolarité, puis épargnez un petit montant régulier chaque mois. Même 5 000 FCFA mis de côté chaque mois financent une partie de vos frais de formation sur l'année.",
+    tips: [
+      "Fixez une enveloppe mensuelle pour les sorties et les loisirs.",
+      "Placez le loyer et la scolarité en priorité dans votre budget.",
+      "Une épargne de 5 000 à 10 000 FCFA par mois finance déjà une bonne partie de votre matériel.",
+    ],
+    highlights: [
+      { label: "Budget disponible", hint: "Ce qu'il reste après les dépenses essentielles", icon: "ri-wallet-3-line" },
+      { label: "Dépenses essentielles", hint: "Loyer, transport, scolarité, alimentation", icon: "ri-shopping-bag-3-line" },
+      { label: "Objectif formation", hint: "Vos études et certifications en cours", icon: "ri-book-open-line" },
+    ],
+    incomeTypes: [
+      "Bourse d'études",
+      "Job étudiant ou stage",
+      "Aide familiale",
+      "Revenus variables",
+    ],
+    incomeLabel: "Revenu mensuel moyen",
+    availableLabel: "Budget disponible",
+    goals: [
+      { nom: "Financer ma formation", categorie: "education", cible: 500000, mois: 12 },
+      { nom: "Acheter un ordinateur portable", categorie: "education", cible: 350000, mois: 10 },
+      { nom: "Passer une certification", categorie: "education", cible: 250000, mois: 8 },
+    ],
+    assistantSuggestions: [
+      "Je veux financer ma formation",
+      "Je veux acheter un ordinateur portable",
+      "Je veux constituer une épargne",
+    ],
+    bubble: "bg-primary-50 text-primary-700",
+    ring: "ring-primary-300",
+  },
+  {
+    key: "employee",
+    label: "Salarié",
+    icon: "ri-briefcase-4-line",
+    emoji: "👔",
+    tagline: "Optimiser mon salaire et construire mon patrimoine",
+    objectif: "Gérer le salaire mensuel et préparer l'avenir.",
+    focus: ["Salaire fixe", "Charges mensuelles", "Épargne", "Projets personnels"],
+    adviceTitle: "Optimisez votre salaire et construisez votre patrimoine.",
+    advice:
+      "Sur un salaire fixe, automatisez une épargne dès la paie : 10 à 20 % de votre revenu. Ce qui reste devient votre budget de vie. Les augmentations et primes financent en priorité vos projets d'investissement, pas le train de vie.",
+    tips: [
+      "Épargnez 10 à 20 % de votre salaire dès sa réception.",
+      "Gardez 3 à 6 mois de charges en fonds d'urgence.",
+      "Orientez primes et heures supplémentaires vers un projet d'investissement.",
+    ],
+    highlights: [
+      { label: "Salaire mensuel", hint: "Votre revenu fixe déclaré", icon: "ri-money-dollar-circle-line" },
+      { label: "Épargne mensuelle", hint: "La part que vous mettez de côté", icon: "ri-safe-2-line" },
+      { label: "Investissement", hint: "Vos projets patrimoniaux en cours", icon: "ri-line-chart-line" },
+    ],
+    incomeTypes: ["Salaire net", "Salaire et primes", "Salaire et revenus complémentaires"],
+    incomeLabel: "Salaire net mensuel",
+    availableLabel: "Reste à vivre",
+    goals: [
+      { nom: "Acheter une maison", categorie: "logement", cible: 25000000, mois: 60 },
+      { nom: "Acheter une voiture", categorie: "vehicule", cible: 8000000, mois: 24 },
+      { nom: "Financer un voyage", categorie: "voyage", cible: 2500000, mois: 12 },
+    ],
+    assistantSuggestions: [
+      "Je veux acheter une maison",
+      "Je veux acheter une voiture",
+      "Je veux voyager à Zanzibar",
+    ],
+    bubble: "bg-secondary-100 text-secondary-800",
+    ring: "ring-secondary-300",
+  },
+  {
+    key: "entrepreneur",
+    label: "Entrepreneur",
+    icon: "ri-store-2-line",
+    emoji: "💼",
+    tagline: "Séparer mes finances personnelles et mon activité",
+    objectif: "Séparer finances personnelles et activité professionnelle.",
+    focus: ["Revenus variables", "Chiffre d'affaires", "Dépenses business", "Investissements"],
+    adviceTitle: "Analysez votre trésorerie et vos capacités d'investissement.",
+    advice:
+      "Séparez toujours votre budget personnel de votre trésorerie d'activité. Versez-vous une rémunération fixe depuis le compte professionnel, puis suivez marge, charges business et réserve de trésorerie avant d'envisager un investissement.",
+    tips: [
+      "Versez-vous une rémunération fixe, même modeste, chaque mois.",
+      "Gardez une réserve de trésorerie couvrant 3 mois de charges business.",
+      "N'investissez que la trésorerie libre, jamais celle nécessaire au fonctionnement.",
+    ],
+    highlights: [
+      { label: "Revenus business", hint: "Chiffre d'affaires encaissé", icon: "ri-store-2-line" },
+      { label: "Trésorerie", hint: "Encaissements moins charges d'activité", icon: "ri-bank-card-line" },
+      { label: "Projets", hint: "Investissements et expansion", icon: "ri-building-4-line" },
+    ],
+    incomeTypes: [
+      "Chiffre d'affaires mensuel",
+      "Revenus mixtes (activité et salaire)",
+      "Revenus variables d'activité",
+    ],
+    incomeLabel: "Revenu mensuel d'activité",
+    availableLabel: "Trésorerie disponible",
+    goals: [
+      { nom: "Investir mon capital", categorie: "investissement", cible: 5000000, mois: 24 },
+      { nom: "Développer mon entreprise", categorie: "business", cible: 10000000, mois: 36 },
+      { nom: "Constituer une réserve de trésorerie", categorie: "fonds_urgence", cible: 3000000, mois: 12 },
+    ],
+    assistantSuggestions: [
+      "Je veux développer mon entreprise",
+      "Je veux investir mon capital",
+      "Je veux constituer mon fonds d'urgence",
+    ],
+    bubble: "bg-accent-50 text-accent-800",
+    ring: "ring-accent-300",
+  },
+  {
+    key: "freelancer",
+    label: "Freelance",
+    icon: "ri-computer-line",
+    emoji: "🧑‍💻",
+    tagline: "Gérer des revenus irréguliers sereinement",
+    objectif: "Gérer les revenus irréguliers et les périodes creuses.",
+    focus: ["Missions", "Revenus variables", "Charges professionnelles", "Prévision de revenus"],
+    adviceTitle: "Préparez vos périodes avec moins de revenus.",
+    advice:
+      "Lissez vos revenus : calculez votre revenu moyen sur 3 mois, puis fixez-vous un budget sur la base des 3 mois les plus faibles. Le surplus des bons mois alimente un fonds de sécurité qui couvre vos périodes creuses.",
+    tips: [
+      "Budgetissez sur la moyenne de vos 3 derniers mois, pas sur votre meilleur mois.",
+      "Provisionnez impôts et charges professionnelles dès chaque encaissement.",
+      "Visez un fonds de sécurité équivalent à 3 mois de charges personnelles.",
+    ],
+    highlights: [
+      { label: "Missions encaissées", hint: "Vos revenus freelance du mois", icon: "ri-briefcase-line" },
+      { label: "Revenus variables", hint: "Moyenne des 3 derniers mois", icon: "ri-line-chart-line" },
+      { label: "Charges professionnelles", hint: "Outils, déplacements, assurance", icon: "ri-file-list-3-line" },
+    ],
+    incomeTypes: [
+      "Missions freelance",
+      "Revenus variables et irréguliers",
+      "Freelance et salaire complémentaire",
+    ],
+    incomeLabel: "Revenu mensuel moyen",
+    availableLabel: "Disponible après charges",
+    goals: [
+      { nom: "Constituer mon fonds d'urgence", categorie: "fonds_urgence", cible: 3000000, mois: 12 },
+      { nom: "Renouveler mon matériel professionnel", categorie: "business", cible: 1500000, mois: 10 },
+      { nom: "Investir sur le long terme", categorie: "investissement", cible: 5000000, mois: 36 },
+    ],
+    assistantSuggestions: [
+      "Je veux constituer mon fonds d'urgence",
+      "Je veux investir mon capital",
+      "Je veux financer ma formation",
+    ],
+    bubble: "bg-primary-100 text-primary-800",
+    ring: "ring-primary-300",
+  },
+  {
+    key: "family",
+    label: "Famille",
+    icon: "ri-parent-line",
+    emoji: "👨‍👩‍👧",
+    tagline: "Gérer le budget de toute la famille",
+    objectif: "Gérer un budget familial équilibré.",
+    focus: ["Nombre de personnes", "Revenus du foyer", "Charges familiales", "Objectifs communs"],
+    adviceTitle: "Optimisez votre budget familial.",
+    advice:
+      "Sur un budget familial, ce sont les charges récurrentes qui pilotent tout. Regroupez-les, suivez leur part dans le revenu du foyer et protégez une épargne de prévention pour les imprévus liés aux enfants.",
+    tips: [
+      "Suivez la part des charges fixes : elle doit rester sous 50 % des revenus du foyer.",
+      "Créez un fonds de prévention pour la santé et la scolarité.",
+      "Planifiez les objectifs communs à deux, avec une épargne mensuelle partagée.",
+    ],
+    highlights: [
+      { label: "Revenus du foyer", hint: "La somme des revenus du foyer", icon: "ri-group-line" },
+      { label: "Charges familiales", hint: "Loyer, scolarité, alimentation, santé", icon: "ri-home-heart-line" },
+      { label: "Objectifs communs", hint: "Éducation, maison, vacances", icon: "ri-flag-2-line" },
+    ],
+    incomeTypes: ["Salaires du foyer", "Revenus mixtes du foyer", "Revenus variables du foyer"],
+    incomeLabel: "Revenu mensuel du foyer",
+    availableLabel: "Budget familial disponible",
+    goals: [
+      { nom: "Financer l'éducation des enfants", categorie: "education", cible: 6000000, mois: 48 },
+      { nom: "Acheter une maison familiale", categorie: "logement", cible: 25000000, mois: 60 },
+      { nom: "Partir en vacances en famille", categorie: "voyage", cible: 2000000, mois: 12 },
+    ],
+    assistantSuggestions: [
+      "Je veux financer les études de mes enfants",
+      "Je veux acheter une maison",
+      "Je veux partir en vacances en famille",
+    ],
+    bubble: "bg-secondary-50 text-secondary-800",
+    ring: "ring-secondary-300",
+  },
+  {
+    key: "retired",
+    label: "Retraité",
+    icon: "ri-user-heart-line",
+    emoji: "👴",
+    tagline: "Protéger mes revenus fixes et mon patrimoine",
+    objectif: "Gérer des revenus fixes et protéger le patrimoine.",
+    focus: ["Pension", "Dépenses de santé", "Épargne disponible"],
+    adviceTitle: "Protégez votre équilibre financier.",
+    advice:
+      "Avec une pension fixe, la priorité est la stabilité : couvrez les dépenses de santé, gardez une épargne de précaution immédiatement disponible et ne prenez pas de risque qui menacerait votre revenu mensuel.",
+    tips: [
+      "Gardez une épargne de précaution accessible pour la santé.",
+      "Arbitrez les placements risqués vers des supports plus stables.",
+      "Anticipez les dépenses de santé annuelles dans votre budget mensuel.",
+    ],
+    highlights: [
+      { label: "Pension", hint: "Votre revenu de retraite mensuel", icon: "ri-hand-coin-line" },
+      { label: "Dépenses de santé", hint: "Soins, mutuelle, pharmacie", icon: "ri-heart-pulse-line" },
+      { label: "Épargne disponible", hint: "Ce que vous pouvez mobiliser rapidement", icon: "ri-safe-2-line" },
+    ],
+    incomeTypes: ["Pension de retraite", "Pension et revenus locatifs", "Pension et épargne"],
+    incomeLabel: "Pension mensuelle",
+    availableLabel: "Disponible après charges",
+    goals: [
+      { nom: "Constituer un fonds santé", categorie: "fonds_urgence", cible: 3000000, mois: 18 },
+      { nom: "Préserver une épargne", categorie: "epargne", cible: 5000000, mois: 36 },
+      { nom: "Financer un voyage", categorie: "voyage", cible: 2000000, mois: 12 },
+    ],
+    assistantSuggestions: [
+      "Je veux constituer mon fonds d'urgence",
+      "Je veux voyager",
+      "Je veux constituer une épargne",
+    ],
+    bubble: "bg-background-100 text-foreground-700",
+    ring: "ring-background-300",
+  },
+];
+
+export const financialProfileOptions = financialProfileBlueprints.map((item) => ({
+  value: item.key,
+  label: item.label,
+}));
+
+export function isFinancialProfileType(value: unknown): value is FinancialProfileType {
+  return financialProfileBlueprints.some((item) => item.key === value);
+}
+
+export function getFinancialProfileBlueprint(
+  key?: string | null,
+): FinancialProfileBlueprint | null {
+  if (!key) return null;
+  return financialProfileBlueprints.find((item) => item.key === key) ?? null;
+}

@@ -1,0 +1,296 @@
+export const fichesEducation = [
+  {
+    id: "regle-50-30-20",
+    titre: "La règle 50 / 30 / 20, expliquée simplement",
+    categorie: "Budget",
+    modules: ["budget", "revenus"],
+    icon: "ri-pie-chart-2-line",
+    minutes: 4,
+    niveau: "Débutant",
+    resume:
+      "La méthode la plus répandue pour répartir un revenu sans se priver : la moitié pour l'essentiel, un tiers pour le plaisir, le reste pour l'avenir.",
+    points: [
+      "50 % pour les besoins essentiels : logement, alimentation, transport, factures, santé.",
+      "30 % pour les envies : sorties, shopping, abonnements, loisirs.",
+      "20 % pour l'épargne et le remboursement de dettes.",
+      "Cette règle est un point de départ, pas une loi : à faible revenu, les besoins dépassent souvent 50 %.",
+    ],
+    exemple:
+      "Avec 600 000 FCFA par mois, la cible est 300 000 FCFA de besoins, 180 000 FCFA d'envies et 120 000 FCFA d'épargne.",
+    action: "Comparer mon budget réel",
+    to: "/app/budget",
+  },
+  {
+    id: "fonds-urgence",
+    titre: "Construire un fonds d'urgence en 6 mois",
+    categorie: "Épargne",
+    modules: ["objectifs", "budget"],
+    icon: "ri-shield-star-line",
+    minutes: 5,
+    niveau: "Débutant",
+    resume:
+      "Le fonds d'urgence est la première brique de toute sécurité financière : il évite de s'endetter au premier imprévu.",
+    points: [
+      "Objectif de départ : 3 mois de dépenses essentielles, puis 6 mois si vos revenus sont irréguliers.",
+      "Gardez-le séparé de votre compte courant, dans un support disponible rapidement.",
+      "Alimentez-le automatiquement le jour où vous recevez vos revenus, pas en fin de mois.",
+      "Ne l'utilisez que pour un vrai imprévu, puis reconstituez-le.",
+    ],
+    exemple:
+      "Si vos dépenses essentielles sont de 350 000 FCFA, visez 1 050 000 FCFA, soit 175 000 FCFA par mois sur 6 mois.",
+    action: "Créer mon fonds d'urgence",
+    to: "/app/objectifs",
+  },
+  {
+    id: "revenus-irreguliers",
+    titre: "Revenus irréguliers : payez-vous un salaire fixe",
+    categorie: "Budget",
+    modules: ["revenus", "budget"],
+    icon: "ri-wallet-3-line",
+    minutes: 5,
+    niveau: "Intermédiaire",
+    resume:
+      "Freelance, commerce, saisonnalité : quand les entrées varient, on ne budgette pas sur le meilleur mois mais sur la moyenne prudente.",
+    points: [
+      "Calculez la moyenne de vos revenus des 6 derniers mois, puis retirez 10 % par prudence.",
+      "Versez-vous ce montant fixe chaque mois comme un salaire.",
+      "Placez les excès des bons mois dans une réserve de lissage.",
+      "En mois creux, la réserve complète votre revenu au lieu de vous pousser à emprunter.",
+    ],
+    exemple:
+      "Moyenne de 800 000 FCFA sur 6 mois : versez-vous 720 000 FCFA par mois et gardez le surplus en réserve.",
+    action: "Analyser mes revenus",
+    to: "/app/revenus",
+  },
+  {
+    id: "depenses-invisibles",
+    titre: "Les fuites invisibles de votre budget",
+    categorie: "Comportement",
+    modules: ["depenses", "budget"],
+    icon: "ri-drop-line",
+    minutes: 4,
+    niveau: "Débutant",
+    resume:
+      "Ce ne sont pas les grosses dépenses qui déséquilibrent un budget, mais les petites sorties répétées et non suivies.",
+    points: [
+      "Repérez les dépenses récurrentes de moins de 10 000 FCFA : elles passent inaperçues.",
+      "Une dépense de 3 000 FCFA par jour représente 90 000 FCFA par mois.",
+      "Regroupez vos sorties par catégorie sur un mois complet avant de juger.",
+      "Supprimez d'abord un abonnement oublié, pas votre alimentation.",
+    ],
+    exemple:
+      "Cinq transferts Mobile Money de 2 000 FCFA par semaine, c'est 40 000 FCFA par mois, soit un demi-objectif d'épargne.",
+    action: "Voir mes dépenses par catégorie",
+    to: "/app/depenses",
+  },
+  {
+    id: "objectif-ou-projet",
+    titre: "Objectif ou projet ? La différence qui change tout",
+    categorie: "Bases",
+    modules: ["objectifs", "projets"],
+    icon: "ri-route-line",
+    minutes: 4,
+    niveau: "Débutant",
+    resume:
+      "L'objectif dit où vous allez, le projet explique comment vous y allez. Confondre les deux rend le suivi impossible.",
+    points: [
+      "Un objectif est une destination chiffrée avec une échéance : 9 000 000 FCFA de mariage en 2028.",
+      "Un projet est le plan d'action : salle, traiteur, décoration, voyage, avec un budget par poste.",
+      "Un objectif sans projet reste un rêve ; un projet sans objectif part dans tous les sens.",
+      "Reliez toujours les deux pour suivre l'avancement réel.",
+    ],
+    exemple:
+      "Objectif « Mariage » à 9 000 000 FCFA → projet « Organisation mariage » découpé en 4 postes et 6 étapes.",
+    action: "Voir mes objectifs",
+    to: "/app/objectifs",
+  },
+  {
+    id: "epargne-mensuelle",
+    titre: "Calculer l'épargne mensuelle nécessaire",
+    categorie: "Épargne",
+    modules: ["objectifs", "simulations"],
+    icon: "ri-calculator-line",
+    minutes: 4,
+    niveau: "Débutant",
+    resume:
+      "Un objectif n'a de valeur que s'il se traduit par un montant mensuel réaliste. Le calcul est simple, la discipline l'est moins.",
+    points: [
+      "Montant restant = cible − déjà épargné.",
+      "Mensualité = montant restant ÷ nombre de mois restants.",
+      "Comparez ce résultat à votre capacité d'épargne réelle avant de valider.",
+      "Si l'écart est trop grand, allongez l'échéance plutôt que de compter sur un miracle.",
+    ],
+    exemple:
+      "Cible 5 000 000 FCFA, déjà 800 000 FCFA, 36 mois restants : 117 000 FCFA par mois environ.",
+    action: "Suivre mes objectifs",
+    to: "/app/objectifs",
+  },
+  {
+    id: "budget-projet",
+    titre: "Un budget de projet qui tient debout",
+    categorie: "Projets",
+    modules: ["projets", "objectifs"],
+    icon: "ri-building-4-line",
+    minutes: 6,
+    niveau: "Intermédiaire",
+    resume:
+      "Un projet qui dérape budgétairement dérape presque toujours à cause d'un poste oublié, pas d'une mauvaise estimation globale.",
+    points: [
+      "Découpez en postes précis : terrain, matériaux, main d'œuvre, architecte.",
+      "Ajoutez systématiquement 10 % de marge pour les imprévus.",
+      "Distinguez le devis initial du montant déjà réellement dépensé.",
+      "Fixez des échéances par étape, pas seulement une date de fin globale.",
+    ],
+    exemple:
+      "Construction estimée à 47 000 000 FCFA : prévoyez 5 200 000 FCFA de marge et donc une enveloppe de 52 000 000 FCFA.",
+    action: "Ouvrir mon projet",
+    to: "/app/projets",
+  },
+  {
+    id: "taux-endettement",
+    titre: "Taux d'endettement : pourquoi la limite des 33 %",
+    categorie: "Crédit",
+    modules: ["logement", "depenses"],
+    icon: "ri-bank-line",
+    minutes: 5,
+    niveau: "Intermédiaire",
+    resume:
+      "Les prêteurs considèrent qu'au-delà d'un tiers de vos revenus en crédit, votre budget devient fragile.",
+    points: [
+      "Taux d'endettement = mensualités de crédit ÷ revenus nets mensuels.",
+      "Au-delà de 33 %, la plupart des dossiers sont refusés ou renégociés.",
+      "Le taux d'endettement n'inclut pas les charges courantes : le reste à vivre compte aussi.",
+      "Un apport plus important réduit la mensualité et sécurise le dossier.",
+    ],
+    exemple:
+      "Revenus nets de 900 000 FCFA : la mensualité maximale raisonnable est d'environ 297 000 FCFA.",
+    action: "Calculer ma capacité",
+    to: "/app/logement",
+  },
+  {
+    id: "simuler-avant",
+    titre: "Simuler avant de décider",
+    categorie: "Bases",
+    modules: ["simulations", "budget"],
+    icon: "ri-git-branch-line",
+    minutes: 3,
+    niveau: "Débutant",
+    resume:
+      "Une décision financière se teste d'abord sur le papier : trois minutes de simulation évitent trois mois de regret.",
+    points: [
+      "Testez l'effet d'une hausse de revenus avant de changer de train de vie.",
+      "Mesurez ce que libère une baisse de 10 % de vos dépenses non essentielles.",
+      "Comparez plusieurs horizons : 12, 24 et 36 mois donnent des réponses différentes.",
+      "Choisissez la décision qui améliore votre marge sans dégrader votre quotidien.",
+    ],
+    exemple:
+      "Réduire les envies de 20 % sur 600 000 FCFA de revenus libère 36 000 FCFA par mois, soit 432 000 FCFA par an.",
+    action: "Lancer une simulation",
+    to: "/app/simulations",
+  },
+  {
+    id: "payer-soi-meme",
+    titre: "Épargner d'abord, dépenser ensuite",
+    categorie: "Comportement",
+    modules: ["budget", "objectifs"],
+    icon: "ri-timer-flash-line",
+    minutes: 3,
+    niveau: "Débutant",
+    resume:
+      "L'épargne en fin de mois n'existe presque jamais. Ce qui reste n'est pas une épargne, c'est un reliquat.",
+    points: [
+      "Automatisez un virement d'épargne le jour de la paie.",
+      "Considérez cette somme comme une facture fixe, non négociable.",
+      "Commencez par un montant faible mais tenable, puis augmentez-le.",
+      "Séparez physiquement l'épargne du compte de dépenses quotidiennes.",
+    ],
+    exemple:
+      "10 % de 600 000 FCFA, soit 60 000 FCFA, épargnés le 2 du mois au lieu d'attendre le 30.",
+    action: "Voir mon budget",
+    to: "/app/budget",
+  },
+  {
+    id: "interets-composes",
+    titre: "Comprendre les intérêts composés",
+    categorie: "Investissement",
+    modules: ["objectifs", "simulations"],
+    icon: "ri-line-chart-line",
+    minutes: 6,
+    niveau: "Intermédiaire",
+    resume:
+      "Vos gains produisent eux-mêmes des gains : le temps devient votre principal allié, avant même le montant investi.",
+    points: [
+      "Le rendement s'applique au capital initial mais aussi aux intérêts déjà accumulés.",
+      "Doubler la durée produit souvent plus d'effet que doubler le versement.",
+      "Les frais de gestion pèsent lourd sur longue période : vérifiez-les.",
+      "Privilégiez un placement simple, que vous comprenez, avant d'en chercher un autre.",
+    ],
+    exemple:
+      "100 000 FCFA par mois à 6 % par an donnent environ 1 450 000 FCFA de capital après un an, dont une part d'intérêts.",
+    action: "Simuler un horizon",
+    to: "/app/simulations",
+  },
+  {
+    id: "lire-rapport",
+    titre: "Lire un rapport mensuel en 5 minutes",
+    categorie: "Bases",
+    modules: ["rapports", "budget"],
+    icon: "ri-file-chart-line",
+    minutes: 4,
+    niveau: "Débutant",
+    resume:
+      "Quatre chiffres suffisent pour savoir si votre mois a été sain : revenus, dépenses, solde et taux d'épargne.",
+    points: [
+      "Comparez toujours au mois précédent, jamais à un mois idéal.",
+      "Regardez le solde avant de regarder les détails : c'est le résultat.",
+      "Identifiez le premier poste de dépense et sa part réelle.",
+      "Exportez le rapport pour suivre l'évolution sur plusieurs mois.",
+    ],
+    exemple:
+      "Revenus 900 000, dépenses 780 000, solde 120 000 : taux d'épargne de 13 %, encore sous la cible de 20 %.",
+    action: "Ouvrir mes rapports",
+    to: "/app/rapports",
+  },
+  {
+    id: "inflation",
+    titre: "L'inflation et votre pouvoir d'achat",
+    categorie: "Bases",
+    modules: ["budget", "depenses"],
+    icon: "ri-arrow-up-double-line",
+    minutes: 4,
+    niveau: "Intermédiaire",
+    resume:
+      "Une épargne qui ne rapporte rien perd du pouvoir d'achat chaque année. Le montant affiché ne dit pas tout.",
+    points: [
+      "Une inflation de 5 % rend 100 000 FCFA d'aujourd'hui équivalents à environ 95 000 FCFA dans un an.",
+      "Anticipez la hausse des prix dans vos objectifs à long terme.",
+      "Ne laissez pas dormir une épargne de projet lointain sur un compte courant.",
+      "Comparez toujours un rendement à l'inflation, pas à zéro.",
+    ],
+    exemple:
+      "Objectif à 5 000 000 FCFA dans 10 ans : prévoyez plutôt 6 300 000 FCFA pour conserver le même achat.",
+    action: "Ajuster un objectif",
+    to: "/app/objectifs",
+  },
+  {
+    id: "demander-assistant",
+    titre: "Formuler une demande à l'assistant IA",
+    categorie: "Bases",
+    modules: ["assistant"],
+    icon: "ri-sparkling-line",
+    minutes: 3,
+    niveau: "Débutant",
+    resume:
+      "L'assistant transforme une phrase en plan financier. Encore faut-il lui donner le montant, l'horizon et la priorité.",
+    points: [
+      "Une phrase claire : « je veux acheter une maison ».",
+      "Ajoutez le montant et la durée : « 50 millions dans 6 ans ».",
+      "Précisez ce que vous avez déjà épargné si possible.",
+      "L'assistant crée d'abord l'objectif, puis le projet qui le finance.",
+    ],
+    exemple:
+      "« Je veux acheter une maison à 50 000 000 FCFA dans 6 ans » donne un effort mensuel et un plan par poste.",
+    action: "Parler à l'assistant",
+    to: "/app/assistant",
+  },
+];

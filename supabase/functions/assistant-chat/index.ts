@@ -16,7 +16,8 @@
  *
  * Sécurité / confidentialité :
  *   - Session obligatoire ; les données sont lues avec le jeton de l'utilisateur (RLS appliquée).
- *   - Seuls des TOTAUX agrégés sont transmis au fournisseur d'IA : ni nom, ni email, ni libellé de dépense.
+ *   - Transmis au fournisseur d'IA : totaux du mois et par catégorie, objectifs et projets (nom, montants,
+ *     échéance). Jamais : nom ou email de l'utilisateur, ni libellés ou détails des dépenses.
  */
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -128,70 +129,147 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  // Contexte financier agrégé (3 derniers mois), lu avec les droits de l'utilisateur.
-  const since = monthsAgoIso(2);
-  const [profileRes, incomeRes, expenseRes, goalsRes] = await Promise.all([
+  // Contexte financier réel, lu avec les droits de l'utilisateur (RLS).
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7); // AAAA-MM
+  const since = monthsAgoIso(2); // mois en cours + 2 mois précédents
+  const [profileRes, incomeRes, expenseRes, goalsRes, projectsRes] = await Promise.all([
     userClient.from("profiles").select("devise, pays, budget_rule").eq("id", userId).maybeSingle(),
-    userClient.from("income").select("montant").gte("date", since),
-    userClient.from("expenses").select("montant, categorie").gte("date", since),
+    userClient.from("income").select("montant, date").gte("date", since),
+    userClient.from("expenses").select("montant, date, categorie").gte("date", since),
     userClient
       .from("goals")
-      .select("categorie, montant_objectif, montant_actuel, date_limite, statut")
-      .eq("statut", "actif")
+      .select("nom, categorie, montant_objectif, montant_actuel, date_limite, statut")
+      .order("date_limite", { ascending: true })
+      .limit(8),
+    userClient
+      .from("projects")
+      .select("nom, statut, budget_total, montant_finance, date_fin")
+      .in("statut", ["preparation", "en_cours"])
       .limit(5),
   ]);
 
+  // Diagnostic sans aucun montant : nombre de lignes lues et erreurs éventuelles.
+  const readErrors = [profileRes.error, incomeRes.error, expenseRes.error, goalsRes.error, projectsRes.error]
+    .filter(Boolean)
+    .map((error) => error?.message)
+    .join(" | ");
+  console.log(
+    `[assistant-chat] contexte : revenus=${incomeRes.data?.length ?? "err"} dépenses=${
+      expenseRes.data?.length ?? "err"
+    } objectifs=${goalsRes.data?.length ?? "err"} projets=${projectsRes.data?.length ?? "err"}${
+      readErrors ? ` erreurs=${readErrors}` : ""
+    }`,
+  );
+
   const profile = (profileRes.data ?? {}) as { devise?: string; pays?: string; budget_rule?: string };
   const devise = profile.devise || "FCFA";
-  const income = (incomeRes.data ?? []) as { montant: number }[];
-  const expenses = (expenseRes.data ?? []) as { montant: number; categorie: string }[];
+  const rule8020 = profile.budget_rule === "80-20";
+  const income = (incomeRes.data ?? []) as { montant: number; date: string }[];
+  const expenses = (expenseRes.data ?? []) as { montant: number; date: string; categorie: string }[];
   const goals = (goalsRes.data ?? []) as {
+    nom: string;
     categorie: string;
     montant_objectif: number;
     montant_actuel: number;
     date_limite: string | null;
+    statut: string;
+  }[];
+  const projects = (projectsRes.data ?? []) as {
+    nom: string;
+    statut: string;
+    budget_total: number;
+    montant_finance: number;
+    date_fin: string | null;
   }[];
 
-  const incomeAvg = income.reduce((sum, row) => sum + (Number(row.montant) || 0), 0) / 3;
-  const byCategory: Record<string, number> = {};
-  expenses.forEach((row) => {
-    byCategory[row.categorie] = (byCategory[row.categorie] ?? 0) + (Number(row.montant) || 0) / 3;
-  });
-  const savingsAvg = byCategory.epargne ?? 0;
-  const spendingAvg =
-    Object.values(byCategory).reduce((sum, value) => sum + value, 0) - savingsAvg;
-  const topCategories = Object.entries(byCategory)
+  const amount = (value: unknown) => Number(value) || 0;
+  const monthOf = (date: string) => String(date).slice(0, 7);
+
+  // Mois en cours : chiffres exacts.
+  const monthIncome = income
+    .filter((row) => monthOf(row.date) === currentMonth)
+    .reduce((sum, row) => sum + amount(row.montant), 0);
+  const monthByCategory: Record<string, number> = {};
+  expenses
+    .filter((row) => monthOf(row.date) === currentMonth)
+    .forEach((row) => {
+      monthByCategory[row.categorie] = (monthByCategory[row.categorie] ?? 0) + amount(row.montant);
+    });
+  const monthSavings = monthByCategory.epargne ?? 0;
+  const monthSpending =
+    Object.values(monthByCategory).reduce((sum, value) => sum + value, 0) - monthSavings;
+
+  // Moyenne : divisée par le nombre de mois qui contiennent réellement des données.
+  const months = new Set([...income, ...expenses].map((row) => monthOf(row.date)));
+  const monthCount = Math.max(months.size, 1);
+  const avgIncome = income.reduce((sum, row) => sum + amount(row.montant), 0) / monthCount;
+  const avgSpending =
+    expenses
+      .filter((row) => row.categorie !== "epargne")
+      .reduce((sum, row) => sum + amount(row.montant), 0) / monthCount;
+
+  const topCategories = Object.entries(monthByCategory)
     .filter(([key]) => key !== "epargne")
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 4)
+    .slice(0, 5)
     .map(([key, value]) => `${key} ${fmt(value, devise)}`)
     .join(", ");
 
+  // Budget recommandé selon la règle choisie (revenu du mois, sinon la moyenne).
+  const reference = monthIncome > 0 ? monthIncome : avgIncome;
+  const budgetLine =
+    reference <= 0
+      ? ""
+      : rule8020
+        ? `Budget recommandé (80/20) sur ${fmt(reference, devise)} : dépenses ${fmt(reference * 0.8, devise)}, épargne ${fmt(reference * 0.2, devise)}.`
+        : `Budget recommandé (50/30/20) sur ${fmt(reference, devise)} : besoins ${fmt(reference * 0.5, devise)}, envies ${fmt(reference * 0.3, devise)}, épargne ${fmt(reference * 0.2, devise)}.`;
+
+  const goalsLine = goals.length
+    ? `Objectifs : ${goals
+        .map((goal) => {
+          const target = amount(goal.montant_objectif);
+          const saved = amount(goal.montant_actuel);
+          const pct = target > 0 ? Math.round((saved / target) * 100) : 0;
+          return `« ${goal.nom} » (${goal.categorie}, ${goal.statut}) : ${fmt(saved, devise)} sur ${fmt(target, devise)}, soit ${pct} %${
+            goal.date_limite ? `, échéance ${goal.date_limite}` : ""
+          }`;
+        })
+        .join(" ; ")}.`
+    : "Aucun objectif enregistré.";
+
+  const projectsLine = projects.length
+    ? `Projets en cours : ${projects
+        .map(
+          (project) =>
+            `« ${project.nom} » : financé ${fmt(amount(project.montant_finance), devise)} sur ${fmt(amount(project.budget_total), devise)}${
+              project.date_fin ? `, fin prévue ${project.date_fin}` : ""
+            }`,
+        )
+        .join(" ; ")}.`
+    : "";
+
   const context = [
-    `Devise : ${devise}.${profile.pays ? ` Pays : ${profile.pays}.` : ""}`,
+    `Date du jour : ${now.toISOString().slice(0, 10)}. Devise : ${devise}.${profile.pays ? ` Pays : ${profile.pays}.` : ""}`,
     profileLabel ? `Profil financier : ${profileLabel}.` : "",
-    `Règle de budget choisie : ${profile.budget_rule === "80-20" ? "80/20" : "50/30/20"}.`,
+    `Règle de budget choisie : ${rule8020 ? "80/20" : "50/30/20"}.`,
     income.length || expenses.length
-      ? `Moyennes mensuelles (3 derniers mois) : revenus ${fmt(incomeAvg, devise)}, dépenses ${fmt(spendingAvg, devise)}, épargne versée ${fmt(savingsAvg, devise)}, capacité d'épargne estimée ${fmt(Math.max(incomeAvg - spendingAvg, 0), devise)}.`
-      : "Aucun revenu ni dépense enregistré pour l'instant.",
-    topCategories ? `Principaux postes de dépense : ${topCategories}.` : "",
-    goals.length
-      ? `Objectifs actifs : ${goals
-          .map(
-            (goal) =>
-              `${goal.categorie} (${fmt(goal.montant_actuel, devise)} / ${fmt(goal.montant_objectif, devise)}${
-                goal.date_limite ? `, échéance ${goal.date_limite}` : ""
-              })`,
-          )
-          .join(" ; ")}.`
-      : "Aucun objectif actif.",
+      ? `Ce mois-ci (${currentMonth}) : revenus ${fmt(monthIncome, devise)}, dépenses ${fmt(monthSpending, devise)}, épargne versée ${fmt(monthSavings, devise)}, reste disponible ${fmt(monthIncome - monthSpending - monthSavings, devise)}.`
+      : "Aucun revenu ni dépense enregistré sur les 3 derniers mois.",
+    topCategories ? `Dépenses du mois par catégorie : ${topCategories}.` : "",
+    months.size > 1
+      ? `Moyenne sur ${months.size} mois : revenus ${fmt(avgIncome, devise)} par mois, dépenses ${fmt(avgSpending, devise)} par mois, capacité d'épargne ${fmt(Math.max(avgIncome - avgSpending, 0), devise)} par mois.`
+      : "",
+    budgetLine,
+    goalsLine,
+    projectsLine,
   ]
     .filter(Boolean)
     .join("\n");
 
   const systemPrompt = `Tu es le Coach IA de FinBuilder AI, une application de gestion financière personnelle pour l'Afrique francophone.
 Réponds toujours en français, de façon claire, chaleureuse et concrète, en 120 à 220 mots maximum, avec des montants en ${devise} quand c'est utile.
-Appuie-toi sur la situation de l'utilisateur ci-dessous ; ne l'invente pas et ne demande jamais de données sensibles (mot de passe, code, numéro de carte).
+Appuie-toi en priorité sur la situation RÉELLE de l'utilisateur ci-dessous : cite ses vrais montants, ses objectifs et ses projets par leur nom. Si une donnée manque, dis-le et invite-le à la saisir dans l'application ; n'invente jamais de chiffres et ne demande jamais de données sensibles (mot de passe, code, numéro de carte).
 Tu peux renvoyer vers les modules de l'application : Revenus, Dépenses, Budget intelligent (règles 50/30/20 ou 80/20), Objectifs, Projets, Simulations, Conseiller logement, Rapports, Éducation financière.
 Pour créer un objectif ou un projet, invite l'utilisateur à écrire une phrase du type « je veux acheter une maison à 15 millions dans 3 ans ».
 Tu donnes des informations générales : pas de recommandation d'achat d'un produit financier précis, et pour un sujet fiscal ou juridique complexe, conseille un professionnel.

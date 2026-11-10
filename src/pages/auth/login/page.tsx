@@ -177,7 +177,7 @@ export default function LoginPage() {
           <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
             <label
               htmlFor="remember"
-              className="flex cursor-pointer items-center gap-2 text-xs font-medium text-foreground-700"
+              className="tap-target flex cursor-pointer items-center gap-2 text-xs font-medium text-foreground-700"
             >
               <input
                 id="remember"
@@ -191,7 +191,7 @@ export default function LoginPage() {
             </label>
             <Link
               to="/mot-de-passe-oublie"
-              className="whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
+              className="tap-target whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
             >
               Mot de passe oublié ?
             </Link>
@@ -263,14 +263,14 @@ export default function LoginPage() {
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
               to="/mode-demploi"
-              className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
+              className="tap-target inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
             >
               <i className="ri-book-open-line text-sm" />
               Consulter le mode d'emploi
             </Link>
             <Link
               to="/a-propos"
-              className="inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
+              className="tap-target inline-flex items-center gap-1 whitespace-nowrap text-xs font-semibold text-primary-700 transition-colors hover:text-primary-800"
             >
               <i className="ri-mail-send-line text-sm" />
               Écrire à l'équipe

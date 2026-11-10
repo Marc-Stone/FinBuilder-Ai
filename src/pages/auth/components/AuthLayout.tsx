@@ -118,7 +118,7 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
           </Link>
           <Link
             to="/"
-            className="whitespace-nowrap rounded-md border border-background-300 px-3 py-1.5 text-xs font-semibold text-foreground-700"
+            className="tap-target whitespace-nowrap rounded-md border border-background-300 px-3 py-1.5 text-xs font-semibold text-foreground-700"
           >
             Retour au site
           </Link>

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabaseClient";
+import { disablePushNotifications, syncPushSubscription } from "@/lib/push";
 
 export type Profile = {
   id: string;
@@ -81,6 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     fetchProfile(userId);
+    // Notifications push : ré-associe l’abonnement de cet appareil au compte connecté.
+    void syncPushSubscription(userId);
   }, [userId, fetchProfile]);
 
   const refreshProfile = useCallback(async () => {
@@ -90,6 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
+      // Appareil partagé : on retire l’abonnement push avant de quitter la session (RLS).
+      await disablePushNotifications().catch(() => {});
       await supabase.auth.signOut();
     } catch {
       // La session peut déjà être invalide (compte supprimé) : on nettoie l'état local.

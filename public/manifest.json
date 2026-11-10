@@ -1,64 +1,46 @@
 {
-  "id": "./",
+  "id": "/",
   "name": "FinBuilder AI",
   "short_name": "FinBuilder",
-  "description": "Votre coach financier IA : budget, dépenses, épargne et projets, avec un plan chiffré en FCFA.",
+  "description": "Application intelligente de gestion financière avec assistant IA.",
   "lang": "fr",
   "dir": "ltr",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
-  "orientation": "any",
-  "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#2563EB",
   "categories": ["finance", "productivity", "business"],
   "prefer_related_applications": false,
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
   "shortcuts": [
     {
       "name": "Tableau de bord",
       "short_name": "Tableau",
       "description": "Vue d'ensemble de votre santé financière",
-      "url": "./app",
-      "icons": [
-        {
-          "src": "https://readdy.ai/api/search-image?query=Flat%20vector%20app%20icon%20for%20a%20personal%20finance%20SaaS%2C%20vivid%20royal%20blue%20rounded%20square%20background%2C%20centered%20thick%20white%20geometric%20letter%20F%20built%20from%20three%20ascending%20vertical%20bars%2C%20one%20small%20warm%20orange%20square%20accent%20on%20the%20top%20of%20the%20tallest%20bar%2C%20extremely%20clean%20minimal%20shapes%2C%20crisp%20high%20contrast%2C%20wide%20even%20margins%2C%20no%20text%2C%20professional%20brand%20mark&width=192&height=192&seq=finbuilder-icon-192-v2&orientation=squarish&nocache=true",
-          "sizes": "192x192",
-          "type": "image/png"
-        }
-      ]
+      "url": "/app",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Revenus",
       "short_name": "Revenus",
       "description": "Enregistrer et suivre vos entrées d'argent",
-      "url": "./app/revenus"
+      "url": "/app/revenus",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Dépenses",
       "short_name": "Dépenses",
       "description": "Suivre vos sorties par catégorie",
-      "url": "./app/depenses"
-    }
-  ],
-  "icons": [
-    {
-      "src": "https://readdy.ai/api/search-image?query=Flat%20vector%20app%20icon%20for%20a%20personal%20finance%20SaaS%2C%20vivid%20royal%20blue%20rounded%20square%20background%2C%20centered%20thick%20white%20geometric%20letter%20F%20built%20from%20three%20ascending%20vertical%20bars%2C%20one%20small%20warm%20orange%20square%20accent%20on%20the%20top%20of%20the%20tallest%20bar%2C%20extremely%20clean%20minimal%20shapes%2C%20crisp%20high%20contrast%2C%20wide%20even%20margins%2C%20no%20text%2C%20professional%20brand%20mark&width=192&height=192&seq=finbuilder-icon-192-v2&orientation=squarish&nocache=true",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://readdy.ai/api/search-image?query=Flat%20vector%20app%20icon%20for%20a%20personal%20finance%20SaaS%2C%20vivid%20royal%20blue%20rounded%20square%20background%2C%20centered%20thick%20white%20geometric%20letter%20F%20built%20from%20three%20ascending%20vertical%20bars%2C%20one%20small%20warm%20orange%20square%20accent%20on%20the%20top%20of%20the%20tallest%20bar%2C%20extremely%20clean%20minimal%20shapes%2C%20crisp%20high%20contrast%2C%20wide%20even%20margins%2C%20no%20text%2C%20professional%20brand%20mark&width=512&height=512&seq=finbuilder-icon-512-v2&orientation=squarish&nocache=true",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://readdy.ai/api/search-image?query=Flat%20vector%20app%20icon%20for%20a%20personal%20finance%20SaaS%2C%20vivid%20royal%20blue%20square%20background%20bleeding%20to%20all%20four%20edges%20with%20no%20rounded%20corners%20and%20no%20border%2C%20centered%20thick%20white%20geometric%20letter%20F%20built%20from%20three%20ascending%20vertical%20bars%2C%20small%20warm%20orange%20square%20accent%2C%20very%20generous%20empty%20safe%20area%20around%20the%20mark%2C%20clean%20minimal%20shapes%2C%20crisp%20high%20contrast%2C%20no%20text%2C%20professional%20brand%20mark&width=512&height=512&seq=finbuilder-icon-maskable-v2&orientation=squarish&nocache=true",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "url": "/app/depenses",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

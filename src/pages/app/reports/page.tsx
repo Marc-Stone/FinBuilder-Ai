@@ -11,7 +11,7 @@ import {
   type ReportExpenseRow,
   type ReportIncomeRow,
 } from "@/lib/reports";
-import { exportMonthReportPdf, type ReportPdfOptions } from "@/lib/reportPdf";
+import type { ReportPdfOptions } from "@/lib/reportPdf";
 import MonthSwitcher from "@/pages/app/reports/components/MonthSwitcher";
 import ReportKpis from "@/pages/app/reports/components/ReportKpis";
 import ReportTrendChart from "@/pages/app/reports/components/ReportTrendChart";
@@ -110,13 +110,17 @@ export default function ReportsPage() {
 
   const handleExport = useCallback(() => {
     setExporting(true);
-    window.setTimeout(() => {
-      try {
+    // jsPDF (~600 Ko) n'est téléchargé qu'au moment de l'export.
+    import("@/lib/reportPdf")
+      .then(({ exportMonthReportPdf }) => {
         exportMonthReportPdf(report, devise, options, author);
-      } finally {
+      })
+      .catch((error) => {
+        console.error(error);
+      })
+      .finally(() => {
         setExporting(false);
-      }
-    }, 80);
+      });
   }, [report, devise, options, author]);
 
   if (loading) {

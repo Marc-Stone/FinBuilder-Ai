@@ -7,18 +7,19 @@ import AnimatedStat from "@/components/base/AnimatedStat";
 import Reveal from "@/components/base/Reveal";
 import ScrollTopButton from "@/components/base/ScrollTopButton";
 import { guideFaq, guideFlow, guideModules, guideStartSteps } from "@/mocks/guide";
-import { exportGuidePdf } from "@/lib/guidePdf";
 
 export default function GuidePage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [downloading, setDownloading] = useState(false);
   const [pdfError, setPdfError] = useState("");
 
-  function handleDownloadGuide() {
+  async function handleDownloadGuide() {
     if (downloading) return;
     setDownloading(true);
     setPdfError("");
     try {
+      // Générateur PDF chargé uniquement au clic (allège la page).
+      const { exportGuidePdf } = await import("@/lib/guidePdf");
       exportGuidePdf();
     } catch (error) {
       setPdfError(

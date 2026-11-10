@@ -17,6 +17,7 @@ import NotificationSummary from "@/pages/app/notifications/components/Notificati
 import NotificationFilters from "@/pages/app/notifications/components/NotificationFilters";
 import NotificationCard from "@/pages/app/notifications/components/NotificationCard";
 import ReminderSettings from "@/pages/app/notifications/components/ReminderSettings";
+import PushSettings from "@/pages/app/notifications/components/PushSettings";
 import BudgetWeaknessCard from "@/pages/app/notifications/components/BudgetWeaknessCard";
 import AnnouncementCard from "@/pages/app/notifications/components/AnnouncementCard";
 import {
@@ -452,6 +453,7 @@ export default function NotificationsPage() {
 
         <div className="space-y-3 lg:col-span-5 xl:col-span-4">
           <ReminderSettings channels={channels} onToggle={handleToggleChannel} />
+          <PushSettings />
           <BudgetWeaknessCard
             diagnosis={feed.diagnosis}
             feed={feed}

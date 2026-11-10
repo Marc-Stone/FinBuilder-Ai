@@ -1,65 +1,53 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import {
+  canPromptInstall,
   isIosDevice,
   isStandaloneMode,
-  type BeforeInstallPromptEvent,
+  promptInstall,
+  subscribeInstallState,
 } from "@/lib/pwa";
 
+/**
+ * Bouton « Installer » permanent du Profil.
+ * L'événement d'installation de Chrome est capturé dès le démarrage par src/lib/pwa.ts
+ * (il n'est émis qu'une fois, bien avant l'ouverture de cette page) : on le lit ici.
+ */
 export default function InstallAppCard() {
-  const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
-  const [showIosHelp, setShowIosHelp] = useState(false);
+  const canPrompt = useSyncExternalStore(subscribeInstallState, canPromptInstall, () => false);
+  const [installed, setInstalled] = useState(() => isStandaloneMode());
+  const [showHelp, setShowHelp] = useState(false);
   const [message, setMessage] = useState("");
+  const ios = isIosDevice();
 
   useEffect(() => {
-    setInstalled(isStandaloneMode());
-
-    const handlePrompt = (event: Event) => {
-      event.preventDefault();
-      setInstallEvent(event as BeforeInstallPromptEvent);
-      setMessage("");
-    };
-
     const handleInstalled = () => {
       setInstalled(true);
-      setInstallEvent(null);
       setMessage("FinBuilder AI est installé sur votre téléphone.");
     };
-
-    window.addEventListener("beforeinstallprompt", handlePrompt);
     window.addEventListener("appinstalled", handleInstalled);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handlePrompt);
-      window.removeEventListener("appinstalled", handleInstalled);
-    };
+    return () => window.removeEventListener("appinstalled", handleInstalled);
   }, []);
 
   const handleInstall = async () => {
-    if (!installEvent) {
-      setShowIosHelp(true);
+    if (!canPrompt) {
+      setShowHelp(true);
       return;
     }
 
-    setShowIosHelp(false);
-    try {
-      await installEvent.prompt();
-      const choice = await installEvent.userChoice;
-      if (choice.outcome === "accepted") {
-        setInstalled(true);
-        setMessage("Installation lancée. L'icône apparaît sur votre écran d'accueil.");
-      } else {
-        setMessage("Installation annulée. Vous pouvez réessayer quand vous voulez.");
-      }
-    } catch {
-      setMessage("L'installation n'a pas pu démarrer. Réessayez depuis Chrome.");
-    } finally {
-      setInstallEvent(null);
+    setShowHelp(false);
+    const outcome = await promptInstall();
+    if (outcome === "accepted") {
+      setInstalled(true);
+      setMessage("Installation lancée. L'icône apparaît sur votre écran d'accueil.");
+    } else if (outcome === "dismissed") {
+      setMessage("Installation annulée. Vous pouvez réessayer depuis le menu de votre navigateur.");
+    } else {
+      setShowHelp(true);
     }
   };
 
   const handleHelp = () => {
-    setShowIosHelp((current) => !current);
+    setShowHelp((current) => !current);
     setMessage("");
   };
 
@@ -98,39 +86,54 @@ export default function InstallAppCard() {
               barre d'adresse, comme une application classique.
             </p>
             {message && (
-              <p className="mt-2 text-xs leading-relaxed text-primary-700">{message}</p>
+              <p role="status" className="mt-2 text-xs leading-relaxed text-primary-700">
+                {message}
+              </p>
             )}
           </div>
         </div>
         <button
           type="button"
           onClick={handleInstall}
-          className="inline-flex w-full shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary-500 px-4 py-2.5 text-sm font-semibold text-background-50 transition-colors hover:bg-primary-600 sm:w-auto"
+          className="inline-flex min-h-[44px] w-full shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-md bg-primary-500 px-4 py-2.5 text-sm font-semibold text-background-50 transition-colors hover:bg-primary-600 sm:w-auto"
         >
           <i className="ri-download-2-line text-base" />
           Installer
         </button>
       </div>
 
-      {showIosHelp && (
+      {showHelp && (
         <div className="mt-4 rounded-md border border-background-200 bg-background-100 px-3.5 py-3 text-xs leading-relaxed text-foreground-700">
           <p className="font-semibold text-foreground-900">
-            {isIosDevice() ? "Sur iPhone / iPad" : "Depuis votre navigateur"}
+            {ios ? "Sur iPhone / iPad" : "Sur Android"}
           </p>
-          <ol className="mt-2 list-decimal space-y-1 pl-4">
-            <li>Ouvrez FinBuilder AI dans Safari (ou Chrome).</li>
-            <li>
-              Touchez le bouton <span className="font-semibold">Partager</span> (le carré avec une
-              flèche).
-            </li>
-            <li>
-              Choisissez <span className="font-semibold">Sur l'écran d'accueil</span>, puis
-              confirmez.
-            </li>
-          </ol>
+          {ios ? (
+            <ol className="mt-2 list-decimal space-y-1 pl-4">
+              <li>Ouvrez FinBuilder AI dans Safari.</li>
+              <li>
+                Touchez le bouton <span className="font-semibold">Partager</span> (le carré avec une
+                flèche).
+              </li>
+              <li>
+                Choisissez <span className="font-semibold">Sur l'écran d'accueil</span>, puis
+                confirmez.
+              </li>
+            </ol>
+          ) : (
+            <ol className="mt-2 list-decimal space-y-1 pl-4">
+              <li>Ouvrez FinBuilder AI dans Chrome.</li>
+              <li>
+                Touchez le menu <span className="font-semibold">⋮</span> en haut à droite.
+              </li>
+              <li>
+                Choisissez <span className="font-semibold">Installer l'application</span> (ou
+                « Ajouter à l'écran d'accueil »), puis confirmez.
+              </li>
+            </ol>
+          )}
           <p className="mt-2 text-foreground-500">
-            L'installation directe en un clic n'est proposée que sur les navigateurs compatibles
-            (Chrome sur Android notamment).
+            L'installation en un clic n'est proposée que sur les navigateurs compatibles (Chrome
+            sur Android notamment).
           </p>
         </div>
       )}
@@ -138,10 +141,10 @@ export default function InstallAppCard() {
       <button
         type="button"
         onClick={handleHelp}
-        className="mt-3 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-800"
+        className="tap-target mt-3 inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-primary-700 hover:text-primary-800"
       >
         <i className="ri-question-line text-sm" />
-        {showIosHelp ? "Masquer l'aide" : "Comment faire sur mon téléphone ?"}
+        {showHelp ? "Masquer l'aide" : "Comment faire sur mon téléphone ?"}
       </button>
     </div>
   );

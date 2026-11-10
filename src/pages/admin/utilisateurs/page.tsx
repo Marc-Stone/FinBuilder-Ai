@@ -8,7 +8,6 @@ import {
   recordAdminAction,
   type AdminUserRow,
 } from "@/lib/admin";
-import { exportUsersPdf } from "@/lib/adminUsersPdf";
 import UserFilters from "@/pages/admin/utilisateurs/components/UserFilters";
 import UserTable from "@/pages/admin/utilisateurs/components/UserTable";
 import UserDetailModal from "@/pages/admin/utilisateurs/components/UserDetailModal";
@@ -109,11 +108,12 @@ export default function AdminUsersPage() {
     });
   };
 
-  const handleExportPdf = () => {
+  const handleExportPdf = async () => {
     if (filtered.length === 0 || exportingPdf) return;
     setExportingPdf(true);
     setNotice("");
     try {
+      const { exportUsersPdf } = await import("@/lib/adminUsersPdf");
       exportUsersPdf(
         filtered,
         { search, role, country, sort },

@@ -3,7 +3,6 @@ import Footer from "@/components/feature/Footer";
 import Reveal from "@/components/base/Reveal";
 import ScrollTopButton from "@/components/base/ScrollTopButton";
 import Hero from "@/pages/home/components/Hero";
-import DashboardPreview from "@/pages/home/components/DashboardPreview";
 import SolutionSection from "@/pages/home/components/SolutionSection";
 import FeaturesSection from "@/pages/home/components/FeaturesSection";
 import ProfileSection from "@/pages/home/components/ProfileSection";
@@ -12,6 +11,10 @@ import AiSection from "@/pages/home/components/AiSection";
 import TestimonialsSection from "@/pages/home/components/TestimonialsSection";
 import FaqSection from "@/pages/home/components/FaqSection";
 import CtaSection from "@/pages/home/components/CtaSection";
+import { Suspense, lazy } from "react";
+
+/* L’aperçu utilise Recharts (~80 Ko gzip) : chargé après le premier rendu du hero. */
+const DashboardPreview = lazy(() => import("@/pages/home/components/DashboardPreview"));
 
 export default function Home() {
   return (
@@ -20,7 +23,15 @@ export default function Home() {
       <main>
         <Hero />
         <div className="surface-halo w-full bg-background-50 pb-4 pt-10 md:pt-14">
-          <DashboardPreview />
+          <Suspense
+            fallback={
+              <section className="relative z-20 w-full px-4 md:px-6" aria-hidden="true">
+                <div className="mx-auto h-[440px] w-full max-w-6xl rounded-xl border border-background-200 bg-background-50 md:h-[560px]" />
+              </section>
+            }
+          >
+            <DashboardPreview />
+          </Suspense>
           <Reveal delay={120} distance={14} className="shell mt-6">
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-foreground-500">
               <span className="inline-flex items-center gap-1.5">

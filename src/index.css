@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sora:wght@400;500;600;700;800&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -239,6 +237,16 @@
 
   .bottom-nav-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Cible tactile ≥ 44px sur écran tactile (recommandation Apple / Google),
+     sans changer le rendu visuel sur ordinateur. */
+  @media (pointer: coarse) {
+    .tap-target {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+    }
   }
 
   /* ===== Motion design primitives ===== */

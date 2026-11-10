@@ -1,2 +1,0 @@
-import{a as e}from"./rolldown-runtime-BWaJ3C7D.js";import{i as t}from"./supabaseClient-BaHO9qhe.js";import{nt as n}from"./index-JLwOPZ2-.js";var r=e(t(),1),i=e(n(),1);function a({children:e}){let[t,n]=(0,r.useState)(null);return(0,r.useEffect)(()=>{typeof document<`u`&&n(document.body)},[]),t?(0,i.createPortal)(e,t):null}export{a as t};
-//# sourceMappingURL=ModalPortal-BuEtid-X.js.map

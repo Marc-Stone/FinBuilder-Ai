@@ -2,9 +2,11 @@ import { formatMoney, getExpenseCategory, parseIsoDate } from "@/lib/finance";
 import {
   aggregateExpenses,
   buildBudgetPlan,
+  DEFAULT_BUDGET_RULE,
   mergePlanWithActuals,
   resolveReferenceIncome,
   type BudgetGroupResult,
+  type BudgetRule,
 } from "@/lib/budget";
 import { computeGoalProgress, formatMonths, getGoalCategory, type GoalEntry } from "@/lib/goals";
 import { computeEtapesProgress, parseEtapes } from "@/lib/projects";
@@ -52,6 +54,7 @@ export type DiagnosisKey =
   | "epargne"
   | "envies"
   | "besoins"
+  | "quotidien"
   | "equilibre";
 
 export type BudgetDiagnosis = {
@@ -122,6 +125,7 @@ function buildDiagnosis({
   savingsTarget,
   groups,
   devise,
+  rule = DEFAULT_BUDGET_RULE,
 }: {
   referenceIncome: number;
   currentIncome: number;
@@ -130,6 +134,7 @@ function buildDiagnosis({
   savingsTarget: number;
   groups: BudgetGroupResult[];
   devise: string;
+  rule?: BudgetRule;
 }): BudgetDiagnosis {
   const share = (value: number) =>
     referenceIncome > 0 ? Math.round((value / referenceIncome) * 100) : 0;
@@ -192,7 +197,24 @@ function buildDiagnosis({
     };
   }
 
-  if (enviesShare > enviesTarget + 2) {
+  // Règle 80/20 : besoins et envies forment un seul bloc, contrôlé dans son ensemble.
+  const quotidien = groups.find((group) => group.meta.key === "depenses");
+  if (rule === "80-20" && quotidien) {
+    const quotidienShare = share(quotidien.reel);
+    if (quotidienShare > quotidien.meta.percent + 3) {
+      return {
+        key: "quotidien",
+        label: "Dépenses du quotidien au-dessus de 80 %",
+        summary: `Vos dépenses (besoins et envies) représentent ${quotidienShare} % de votre revenu pour une cible de ${quotidien.meta.percent} %. Repérez le poste le plus lourd dans votre budget : chaque économie part directement vers vos 20 % d'épargne.`,
+        metric: `${formatMoney(quotidien.reel, devise)} ce mois-ci`,
+        tone: quotidienShare > 95 ? "risk" : "watch",
+        icon: "ri-wallet-3-line",
+        ficheIds: ["depenses-invisibles", "payer-soi-meme"],
+      };
+    }
+  }
+
+  if (rule !== "80-20" && enviesShare > enviesTarget + 2) {
     return {
       key: "envies",
       label: "Envies & confort au-dessus de la cible",
@@ -204,7 +226,7 @@ function buildDiagnosis({
     };
   }
 
-  if (besoinsShare > besoinsTarget + 5) {
+  if (rule !== "80-20" && besoinsShare > besoinsTarget + 5) {
     return {
       key: "besoins",
       label: "Besoins essentiels trop lourds",
@@ -231,7 +253,11 @@ function buildDiagnosis({
   return {
     key: "equilibre",
     label: "Budget équilibré",
-    summary: `Vos trois blocs respectent la répartition 50 / 30 / 20 et vous épargnez ${savingsShare} % de vos revenus. Le prochain levier est de faire travailler cette épargne.`,
+    summary: `${
+      rule === "80-20"
+        ? "Vos dépenses restent sous 80 % de vos revenus"
+        : "Vos trois blocs respectent la répartition 50 / 30 / 20"
+    } et vous épargnez ${savingsShare} % de vos revenus. Le prochain levier est de faire travailler cette épargne.`,
     metric: `${savingsShare} % épargné ce mois-ci`,
     tone: "good",
     icon: "ri-award-line",
@@ -246,6 +272,7 @@ export function buildNotificationFeed({
   projects = [],
   devise,
   now = new Date(),
+  rule = DEFAULT_BUDGET_RULE,
 }: {
   income: NotifIncomeRow[];
   expenses: NotifExpenseRow[];
@@ -253,6 +280,8 @@ export function buildNotificationFeed({
   projects?: NotifProjectRow[];
   devise: string;
   now?: Date;
+  /** Règle de répartition choisie par l'utilisateur (50/30/20 par défaut). */
+  rule?: BudgetRule;
 }): NotificationFeed {
   const currentKey = monthKeyOf(now);
 
@@ -273,7 +302,7 @@ export function buildNotificationFeed({
     (row) => monthKeyOf(parseIsoDate(row.date)) === currentKey,
   );
   const actual = aggregateExpenses(monthExpenses);
-  const plan = mergePlanWithActuals(buildBudgetPlan(referenceIncome), actual);
+  const plan = mergePlanWithActuals(buildBudgetPlan(referenceIncome, rule), actual);
 
   const savings = round(actual.parGroupe.epargne);
   const savingsTarget = round(referenceIncome * 0.2);
@@ -291,7 +320,7 @@ export function buildNotificationFeed({
       const over = round(group.reel - group.recommande);
       const ratio = group.reel / group.recommande;
       const worst = plan.lines
-        .filter((line) => line.group === group.meta.key)
+        .filter((line) => group.meta.members.includes(line.group))
         .sort((a, b) => b.ecart - a.ecart)[0];
 
       notifications.push({
@@ -506,6 +535,7 @@ export function buildNotificationFeed({
       savingsTarget,
       groups: plan.groups,
       devise,
+      rule,
     }),
     groups: plan.groups,
     reference: referenceIncome,

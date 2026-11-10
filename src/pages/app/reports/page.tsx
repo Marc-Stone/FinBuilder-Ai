@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { getDisplayName, useAuth } from "@/hooks/useAuth";
 import { useSyncedReload } from "@/hooks/useDataSync";
+import { useBudgetRule } from "@/hooks/useBudgetRule";
+import { budgetRuleLabel } from "@/lib/budget";
 import { formatMoney } from "@/lib/finance";
 import {
   buildMonthOptions,
@@ -22,6 +24,7 @@ import ExportPanel from "@/pages/app/reports/components/ExportPanel";
 
 export default function ReportsPage() {
   const { session, profile } = useAuth();
+  const { rule } = useBudgetRule();
   const userId = session?.user?.id;
   const devise = profile?.devise ?? "FCFA";
   const author = [profile?.prenom, profile?.nom].filter(Boolean).join(" ") || getDisplayName(profile);
@@ -239,7 +242,7 @@ export default function ReportsPage() {
             <p className="text-sm font-semibold text-foreground-900">Comment lire ce rapport ?</p>
             <p className="mt-0.5 text-xs leading-relaxed text-foreground-500">
               Un taux d'épargne sous 10 % indique que vos dépenses absorbent presque tout votre
-              revenu. Comparez ensuite le poste le plus lourd à sa part recommandée (50 / 30 / 20).
+              revenu. Comparez ensuite le poste le plus lourd à sa part recommandée ({budgetRuleLabel(rule)}).
             </p>
           </div>
         </div>

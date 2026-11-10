@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useDataSync } from "@/hooks/useDataSync";
 import { ALERTS_SEEN_EVENT, readAlertChannels, readAlertsSeen, writeAlertsSeen } from "@/lib/attention";
 import type { GoalEntry } from "@/lib/goals";
+import { BUDGET_RULE_EVENT, readBudgetRule } from "@/lib/budget";
 import {
   buildNotificationFeed,
   type AppNotification,
@@ -73,6 +74,7 @@ async function loadAlertFeed(userId: string, devise: string): Promise<void> {
         goals: (goalResult.data ?? []) as GoalEntry[],
         projects: (projectResult.data ?? []) as NotifProjectRow[],
         devise,
+        rule: readBudgetRule(userId),
       });
 
       const channels = readAlertChannels(userId);
@@ -128,7 +130,11 @@ export function useAlertFeed() {
       void loadAlertFeed(userId, devise);
     };
 
+    // Changement de règle 50/30/20 ↔ 80/20 : les alertes budget sont recalculées.
+    const handleRule = () => void loadAlertFeed(userId, devise);
+
     window.addEventListener(ALERTS_SEEN_EVENT, handleSeen);
+    window.addEventListener(BUDGET_RULE_EVENT, handleRule);
     window.addEventListener("storage", handleSeen);
     window.addEventListener("focus", handleFocus);
     const timer = window.setInterval(() => {
@@ -137,6 +143,7 @@ export function useAlertFeed() {
 
     return () => {
       window.removeEventListener(ALERTS_SEEN_EVENT, handleSeen);
+      window.removeEventListener(BUDGET_RULE_EVENT, handleRule);
       window.removeEventListener("storage", handleSeen);
       window.removeEventListener("focus", handleFocus);
       window.clearInterval(timer);

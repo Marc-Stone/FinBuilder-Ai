@@ -15,12 +15,15 @@ import {
   buildBudgetPlan,
   computeFinancialScore,
   mergePlanWithActuals,
+  budgetRuleLabel,
   monthKey,
   resolveReferenceIncome,
 } from "@/lib/budget";
+import { useBudgetRule } from "@/hooks/useBudgetRule";
 import BudgetScoreCard from "@/pages/app/budget/components/BudgetScoreCard";
 import BudgetGroups from "@/pages/app/budget/components/BudgetGroups";
 import BudgetTable from "@/pages/app/budget/components/BudgetTable";
+import BudgetRuleSelector from "@/pages/app/budget/components/BudgetRuleSelector";
 import ExpenseDonutChart from "@/pages/app/components/ExpenseDonutChart";
 
 export default function BudgetPage() {
@@ -32,6 +35,11 @@ export default function BudgetPage() {
   const [expenseRows, setExpenseRows] = useState<ExpenseEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Règle partagée : la changer ici met à jour tableau de bord, alertes et conseils.
+  const { rule, setRule } = useBudgetRule();
+
+  const is8020 = rule === "80-20";
+  const ruleLabel = budgetRuleLabel(rule);
 
   const load = useCallback(async (options?: { silent?: boolean }) => {
     if (!userId) {
@@ -92,10 +100,10 @@ export default function BudgetPage() {
   }, [incomeByMonth, monthIncomeTotal]);
 
   const budget = useMemo(() => {
-    const plan = buildBudgetPlan(reference.reference);
+    const plan = buildBudgetPlan(reference.reference, rule);
     const actual = aggregateExpenses(monthExpenses);
     return { plan: mergePlanWithActuals(plan, actual), actual };
-  }, [reference.reference, monthExpenses]);
+  }, [reference.reference, monthExpenses, rule]);
 
   const score = useMemo(() => {
     const depensesHorsEpargne = budget.actual.total - budget.actual.parGroupe.epargne;
@@ -174,7 +182,7 @@ export default function BudgetPage() {
               Votre répartition recommandée
             </h1>
             <p className="mt-1.5 max-w-xl text-xs leading-relaxed text-background-50/70 md:text-sm">
-              La règle 50 / 30 / 20 appliquée à vos vrais revenus
+              La règle {ruleLabel} appliquée à vos vrais revenus
               {reference.isAverage
                 ? ` — moyenne de vos ${reference.monthsUsed} derniers mois de revenus.`
                 : monthIncomeTotal > 0
@@ -225,6 +233,8 @@ export default function BudgetPage() {
         </div>
       </section>
 
+      <BudgetRuleSelector value={rule} onChange={setRule} />
+
       {reference.reference <= 0 ? (
         <section className="rounded-lg border border-dashed border-background-300 bg-background-50 px-5 py-12 text-center">
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-50 text-primary-700">
@@ -234,8 +244,10 @@ export default function BudgetPage() {
             Ajoutez d'abord un revenu
           </p>
           <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-foreground-500">
-            Le budget intelligent calcule une répartition 50 % besoins, 30 % envies et 20 %
-            épargne à partir de votre revenu réel. Dès votre premier revenu enregistré, la
+            {is8020
+              ? "Le budget intelligent calcule une répartition 80 % dépenses et 20 % épargne"
+              : "Le budget intelligent calcule une répartition 50 % besoins, 30 % envies et 20 % épargne"}{" "}
+            à partir de votre revenu réel. Dès votre premier revenu enregistré, la
             répartition apparaît ici automatiquement.
           </p>
           <Link
@@ -313,8 +325,10 @@ export default function BudgetPage() {
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-foreground-600">
                       Votre revenu de référence est réparti selon la règle{" "}
-                      <strong className="font-semibold text-foreground-900">50 / 30 / 20</strong> :
-                      50 % pour les besoins essentiels, 30 % pour les envies et 20 % pour l'épargne.
+                      <strong className="font-semibold text-foreground-900">{ruleLabel}</strong> :{" "}
+                      {is8020
+                        ? "80 % pour toutes vos dépenses (besoins et envies réunis) et 20 % pour l'épargne, mise de côté en priorité."
+                        : "50 % pour les besoins essentiels, 30 % pour les envies et 20 % pour l'épargne."}{" "}
                       Chaque poste reçoit ensuite un pourcentage cible. Nous comparons ce montant
                       idéal à vos dépenses réelles pour afficher vos écarts.
                     </p>
@@ -337,7 +351,7 @@ export default function BudgetPage() {
             />
           </section>
 
-          <BudgetTable lines={budget.plan.lines} devise={devise} />
+          <BudgetTable lines={budget.plan.lines} devise={devise} rule={rule} />
 
           <section className="flex flex-col gap-3 rounded-lg border border-accent-200 bg-accent-50 px-4 py-4 sm:flex-row sm:items-center sm:justify-between md:px-5">
             <div className="flex items-start gap-3">

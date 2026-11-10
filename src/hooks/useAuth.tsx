@@ -12,6 +12,8 @@ export type Profile = {
   telephone: string | null;
   pays: string | null;
   devise: string | null;
+  /** Règle du budget intelligent (colonne ajoutée par la migration profiles_budget_rule). */
+  budget_rule?: string | null;
   avatar_url: string | null;
   role: string;
   admin_role_id?: string | null;

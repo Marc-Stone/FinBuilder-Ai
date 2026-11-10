@@ -1,12 +1,13 @@
 import { formatMoney, getExpenseCategory } from "@/lib/finance";
-import { budgetGroups, type BudgetLine } from "@/lib/budget";
+import { budgetGroups, DEFAULT_BUDGET_RULE, type BudgetLine, type BudgetRule } from "@/lib/budget";
 
 type BudgetTableProps = {
   lines: BudgetLine[];
   devise: string;
+  rule?: BudgetRule;
 };
 
-export default function BudgetTable({ lines, devise }: BudgetTableProps) {
+export default function BudgetTable({ lines, devise, rule = DEFAULT_BUDGET_RULE }: BudgetTableProps) {
   const visible = lines.filter((line) => line.recommande > 0 || line.reel > 0);
 
   return (
@@ -50,7 +51,10 @@ export default function BudgetTable({ lines, devise }: BudgetTableProps) {
                   <i className={`${group.icon} text-xs`} />
                 </span>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-foreground-600">
-                  {group.label} · {group.percent} %
+                  {group.label} ·{" "}
+                  {rule === "80-20" && group.key !== "epargne"
+                    ? `${group.percent} % · dans le bloc 80 %`
+                    : `${group.percent} %`}
                 </p>
               </div>
 

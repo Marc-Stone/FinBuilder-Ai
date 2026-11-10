@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/hooks/useAuth";
 import { useSyncedReload } from "@/hooks/useDataSync";
+import { useBudgetRule } from "@/hooks/useBudgetRule";
 import { fichesEducation } from "@/mocks/education";
 import type { Fiche } from "@/lib/education";
 import type { GoalEntry } from "@/lib/goals";
@@ -68,6 +69,7 @@ function readChannels(key: string): Record<NotificationCategory, boolean> {
 
 export default function NotificationsPage() {
   const { session, profile } = useAuth();
+  const { rule } = useBudgetRule();
   const userId = session?.user?.id ?? "anonyme";
   const devise = profile?.devise ?? "FCFA";
 
@@ -167,8 +169,8 @@ export default function NotificationsPage() {
   useSyncedReload(load);
 
   const feed = useMemo(
-    () => buildNotificationFeed({ income, expenses, goals, projects, devise }),
-    [income, expenses, goals, projects, devise],
+    () => buildNotificationFeed({ income, expenses, goals, projects, devise, rule }),
+    [income, expenses, goals, projects, devise, rule],
   );
 
   const persistDismissed = useCallback(

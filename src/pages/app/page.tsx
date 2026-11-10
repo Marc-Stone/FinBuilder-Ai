@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { getDisplayName, useAuth } from "@/hooks/useAuth";
 import { useFinancialOverview } from "@/hooks/useFinancialOverview";
+import { useBudgetRule } from "@/hooks/useBudgetRule";
+import { budgetRuleLabel } from "@/lib/budget";
 import { formatMoney } from "@/lib/finance";
 import MonthlyTrendChart from "@/pages/app/components/MonthlyTrendChart";
 import ExpenseDonutChart from "@/pages/app/components/ExpenseDonutChart";
@@ -13,6 +15,8 @@ import { getFinancialProfileBlueprint } from "@/lib/financialProfiles";
 
 export default function DashboardPage() {
   const { profile } = useAuth();
+  const { rule } = useBudgetRule();
+  const ruleLabel = budgetRuleLabel(rule);
   const devise = profile?.devise ?? "FCFA";
   const overview = useFinancialOverview();
   const { financialProfile } = useFinancialProfile();
@@ -100,7 +104,7 @@ export default function DashboardPage() {
     },
     {
       title: "Consultez votre budget intelligent",
-      text: "Une répartition 50 / 30 / 20 calculée sur vos revenus.",
+      text: `Une répartition ${ruleLabel} calculée sur vos revenus.`,
       done: mois.revenus > 0 && mois.revenusCount > 0,
       action: { label: "Budget", to: "/app/budget" },
     },
@@ -353,7 +357,7 @@ export default function DashboardPage() {
                 to: "/app/budget",
                 icon: "ri-pie-chart-2-line",
                 title: "Budget intelligent",
-                text: "Répartition recommandée 50 / 30 / 20.",
+                text: `Répartition recommandée ${ruleLabel}.`,
               },
               {
                 to: "/app/revenus",

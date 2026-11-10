@@ -9,8 +9,13 @@ import {
 
 export type { BudgetGroupKey } from "@/lib/finance";
 
+/** Bloc affiché dans la répartition : un groupe de catégories, ou « dépenses » (règle 80/20). */
+export type BudgetBlockKey = BudgetGroupKey | "depenses";
+
 export type BudgetGroupMeta = {
-  key: BudgetGroupKey;
+  key: BudgetBlockKey;
+  /** Groupes de catégories couverts par ce bloc. */
+  members: BudgetGroupKey[];
   label: string;
   percent: number;
   icon: string;
@@ -23,6 +28,7 @@ export type BudgetGroupMeta = {
 export const budgetGroups: BudgetGroupMeta[] = [
   {
     key: "besoins",
+    members: ["besoins"],
     label: "Besoins essentiels",
     percent: 50,
     icon: "ri-home-heart-line",
@@ -33,6 +39,7 @@ export const budgetGroups: BudgetGroupMeta[] = [
   },
   {
     key: "envies",
+    members: ["envies"],
     label: "Envies & confort",
     percent: 30,
     icon: "ri-shopping-bag-3-line",
@@ -43,6 +50,7 @@ export const budgetGroups: BudgetGroupMeta[] = [
   },
   {
     key: "epargne",
+    members: ["epargne"],
     label: "Épargne & projets",
     percent: 20,
     icon: "ri-safe-2-line",
@@ -52,6 +60,98 @@ export const budgetGroups: BudgetGroupMeta[] = [
     soft: "bg-secondary-100",
   },
 ];
+
+/* ---------- Règles de répartition ---------- */
+
+export type BudgetRule = "50-30-20" | "80-20";
+
+export const DEFAULT_BUDGET_RULE: BudgetRule = "50-30-20";
+
+export type BudgetRuleMeta = {
+  value: BudgetRule;
+  label: string;
+  short: string;
+  description: string;
+};
+
+export const budgetRules: BudgetRuleMeta[] = [
+  {
+    value: "50-30-20",
+    label: "50 / 30 / 20",
+    short: "Détaillée",
+    description: "50 % besoins essentiels, 30 % envies, 20 % épargne. Idéale pour suivre précisément vos postes.",
+  },
+  {
+    value: "80-20",
+    label: "80 / 20",
+    short: "Simplifiée",
+    description: "80 % pour toutes vos dépenses, 20 % d'épargne en priorité. Idéale pour démarrer simplement.",
+  },
+];
+
+/** Règle 80/20 : besoins et envies sont réunis en un seul bloc de dépenses. */
+const spendingBlock: BudgetGroupMeta = {
+  key: "depenses",
+  members: ["besoins", "envies"],
+  label: "Dépenses du quotidien",
+  percent: 80,
+  icon: "ri-wallet-3-line",
+  description: "Besoins essentiels et envies réunis : logement, nourriture, transport, factures, loisirs, shopping.",
+  tone: "text-primary-800",
+  bar: "bg-primary-600",
+  soft: "bg-primary-50",
+};
+
+export function getBudgetBlocks(rule: BudgetRule): BudgetGroupMeta[] {
+  if (rule === "80-20") {
+    return [spendingBlock, budgetGroups.find((group) => group.key === "epargne")!];
+  }
+  return budgetGroups;
+}
+
+export function isBudgetRule(value: unknown): value is BudgetRule {
+  return value === "50-30-20" || value === "80-20";
+}
+
+/** Libellé court de la règle (« 50 / 30 / 20 » ou « 80 / 20 »). */
+export function budgetRuleLabel(rule: BudgetRule): string {
+  return rule === "80-20" ? "80 / 20" : "50 / 30 / 20";
+}
+
+/** Émis à chaque changement de règle : toute l'application se recalcule. */
+export const BUDGET_RULE_EVENT = "finbuilder:budget-rule";
+
+const budgetRuleStorageKey = (userId: string) => `finbuilder:budget-rule:${userId}`;
+
+/** Préférence d'affichage (aucune donnée financière) : stockée sur l'appareil. */
+export function readBudgetRule(userId: string | null | undefined): BudgetRule {
+  if (!userId || typeof window === "undefined") return DEFAULT_BUDGET_RULE;
+  try {
+    const raw = window.localStorage.getItem(budgetRuleStorageKey(userId));
+    return isBudgetRule(raw) ? raw : DEFAULT_BUDGET_RULE;
+  } catch {
+    return DEFAULT_BUDGET_RULE;
+  }
+}
+
+export function writeBudgetRule(userId: string, rule: BudgetRule): void {
+  try {
+    window.localStorage.setItem(budgetRuleStorageKey(userId), rule);
+  } catch {
+    /* stockage indisponible : le choix reste valable pour la session */
+  }
+  window.dispatchEvent(new Event(BUDGET_RULE_EVENT));
+}
+
+/** Abonnement aux changements de règle (cet onglet et les autres onglets ouverts). */
+export function subscribeBudgetRule(listener: () => void): () => void {
+  window.addEventListener(BUDGET_RULE_EVENT, listener);
+  window.addEventListener("storage", listener);
+  return () => {
+    window.removeEventListener(BUDGET_RULE_EVENT, listener);
+    window.removeEventListener("storage", listener);
+  };
+}
 
 export type BudgetLine = {
   categorie: string;
@@ -73,13 +173,18 @@ export type BudgetGroupResult = {
 };
 
 export type BudgetPlan = {
+  rule: BudgetRule;
   reference: number;
   lines: BudgetLine[];
   groups: BudgetGroupResult[];
 };
 
-/** Builds the recommended split from a reference monthly income. */
-export function buildBudgetPlan(reference: number): BudgetPlan {
+/**
+ * Builds the recommended split from a reference monthly income.
+ * Les cibles par catégorie sont identiques dans les deux règles (besoins 50 + envies 30 = 80) :
+ * seule la répartition par blocs change.
+ */
+export function buildBudgetPlan(reference: number, rule: BudgetRule = DEFAULT_BUDGET_RULE): BudgetPlan {
   const safe = Number.isFinite(reference) && reference > 0 ? reference : 0;
 
   const lines: BudgetLine[] = expenseCategories.map((category) => ({
@@ -93,7 +198,7 @@ export function buildBudgetPlan(reference: number): BudgetPlan {
     partReelle: 0,
   }));
 
-  const groups: BudgetGroupResult[] = budgetGroups.map((meta) => ({
+  const groups: BudgetGroupResult[] = getBudgetBlocks(rule).map((meta) => ({
     meta,
     recommande: Math.round((safe * meta.percent) / 100),
     reel: 0,
@@ -101,7 +206,7 @@ export function buildBudgetPlan(reference: number): BudgetPlan {
     ecart: 0,
   }));
 
-  return { reference: safe, lines, groups };
+  return { rule, reference: safe, lines, groups };
 }
 
 export type ActualTotals = {
@@ -145,7 +250,9 @@ export function mergePlanWithActuals(plan: BudgetPlan, actual: ActualTotals): Bu
   });
 
   const groups = plan.groups.map((group) => {
-    const reel = Math.round(actual.parGroupe[group.meta.key] ?? 0);
+    const reel = Math.round(
+      group.meta.members.reduce((sum, member) => sum + (actual.parGroupe[member] ?? 0), 0),
+    );
     return {
       ...group,
       reel,

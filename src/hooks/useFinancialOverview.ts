@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useFinancialData } from "@/hooks/useFinancialData";
+import { useBudgetRule } from "@/hooks/useBudgetRule";
 import { getExpenseCategory, parseIsoDate } from "@/lib/finance";
 import {
   aggregateExpenses,
@@ -9,7 +10,7 @@ import {
   mergePlanWithActuals,
   monthKey,
   resolveReferenceIncome,
-  type BudgetGroupKey,
+  type BudgetBlockKey,
 } from "@/lib/budget";
 import { computeGoalProgress, type GoalEntry } from "@/lib/goals";
 import { computeProjectMetrics } from "@/lib/projects";
@@ -51,7 +52,7 @@ export type FinancialOverview = {
     consomme: number;
     restant: number;
     partConsommee: number;
-    groups: { key: BudgetGroupKey; label: string; recommande: number; reel: number }[];
+    groups: { key: BudgetBlockKey; label: string; recommande: number; reel: number }[];
     overruns: BudgetOverrun[];
   };
   score: ReturnType<typeof computeFinancialScore>;
@@ -75,7 +76,7 @@ function adviceFor(diagnosisKey: string, devise: string, capacity: number) {
     case "revenus":
       return {
         title: "Votre premier revenu débloque tout le reste",
-        text: "Dès qu'un revenu est enregistré, FinBuilder calcule votre budget 50 / 30 / 20, votre capacité d'épargne et votre score. Budget, objectifs, projets et simulations se remplissent ensemble.",
+        text: "Dès qu'un revenu est enregistré, FinBuilder calcule votre budget (règle 50 / 30 / 20 ou 80 / 20, au choix), votre capacité d'épargne et votre score. Budget, objectifs, projets et simulations se remplissent ensemble.",
         to: "/app/revenus",
         actionLabel: "Ajouter un revenu",
         icon: "ri-arrow-down-line",
@@ -115,6 +116,14 @@ function adviceFor(diagnosisKey: string, devise: string, capacity: number) {
         actionLabel: "Comparer mon budget",
         icon: "ri-shopping-bag-3-line",
       };
+    case "quotidien":
+      return {
+        title: "Vos dépenses dépassent 80 % de vos revenus",
+        text: "Avec la règle 80 / 20, toutes vos dépenses doivent tenir dans 80 % de vos revenus. Repérez le poste le plus lourd dans votre budget : chaque économie finance directement vos 20 % d'épargne.",
+        to: "/app/budget",
+        actionLabel: "Comparer mon budget",
+        icon: "ri-wallet-3-line",
+      };
     case "besoins":
       return {
         title: "Vos charges essentielles sont trop lourdes",
@@ -126,7 +135,7 @@ function adviceFor(diagnosisKey: string, devise: string, capacity: number) {
     default:
       return {
         title: "Budget équilibré : faites travailler votre épargne",
-        text: "Vos trois blocs respectent la répartition et vous épargnez déjà plus de 20 % de vos revenus. Simulez un revenu en hausse pour voir la nouvelle date d'atteinte de vos objectifs.",
+        text: "Votre budget respecte la répartition choisie et vous épargnez déjà plus de 20 % de vos revenus. Simulez un revenu en hausse pour voir la nouvelle date d'atteinte de vos objectifs.",
         to: "/app/simulations",
         actionLabel: "Ouvrir le simulateur",
         icon: "ri-award-line",
@@ -138,12 +147,13 @@ function adviceFor(diagnosisKey: string, devise: string, capacity: number) {
  * Vue financière synthétique du tableau de bord.
  * Elle ne déclenche aucune requête : toutes les données proviennent de la
  * source partagée `useFinancialData()`, chargée une seule fois pour l'espace
- * connecté. Les calculs (budget 50/30/20, score, objectifs, projets, conseils)
+ * connecté. Les calculs (budget 50/30/20 ou 80/20 selon le choix de l'utilisateur, score, objectifs, projets, conseils)
  * sont simplement recalculés à partir de ces données communes.
  */
 export function useFinancialOverview(): FinancialOverview {
   const { profile } = useAuth();
   const devise = profile?.devise ?? "FCFA";
+  const { rule } = useBudgetRule();
   const { income, expenses, goals, projects, loading, error, reload } = useFinancialData();
 
   return useMemo<FinancialOverview>(() => {
@@ -164,7 +174,7 @@ export function useFinancialOverview(): FinancialOverview {
       (row) => monthKey(parseIsoDate(row.date)) === currentKey,
     );
     const actual = aggregateExpenses(monthExpenses);
-    const plan = mergePlanWithActuals(buildBudgetPlan(reference), actual);
+    const plan = mergePlanWithActuals(buildBudgetPlan(reference, rule), actual);
 
     const epargne = Math.round(actual.parGroupe.epargne);
     const depensesHorsEpargne = Math.max(actual.total - actual.parGroupe.epargne, 0);
@@ -240,6 +250,7 @@ export function useFinancialOverview(): FinancialOverview {
       projects: projects as NotifProjectRow[],
       devise,
       now,
+      rule,
     });
 
     const projectProgress =
@@ -289,5 +300,5 @@ export function useFinancialOverview(): FinancialOverview {
       alertes: feed.notifications.length,
       advice: adviceFor(feed.diagnosis.key, devise, capacity),
     };
-  }, [income, expenses, goals, projects, loading, error, reload, devise]);
+  }, [income, expenses, goals, projects, loading, error, reload, devise, rule]);
 }

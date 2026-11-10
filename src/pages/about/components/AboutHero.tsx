@@ -3,16 +3,16 @@ import AmbientGlow from "@/components/base/AmbientGlow";
 import AnimatedStat from "@/components/base/AnimatedStat";
 import Reveal from "@/components/base/Reveal";
 import { aboutStats } from "@/mocks/about";
-import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
+import { useRegisteredUsersStat } from "@/hooks/usePublicStats";
 
 export default function AboutHero() {
-  // « Profils financiers » : nombre réel, mis à jour à chaque ajout ou suppression de compte.
-  const profilesStat = useFinancialProfilesStat();
+  // « Utilisateurs inscrits » : nombre réel, mis à jour à chaque inscription ou suppression de compte.
+  const usersStat = useRegisteredUsersStat();
   const stats = aboutStats.map((stat, index) =>
     index === 1
       ? {
-          value: profilesStat.value,
-          label: profilesStat.label.charAt(0).toUpperCase() + profilesStat.label.slice(1),
+          value: usersStat.value,
+          label: usersStat.label.charAt(0).toUpperCase() + usersStat.label.slice(1),
         }
       : stat,
   );

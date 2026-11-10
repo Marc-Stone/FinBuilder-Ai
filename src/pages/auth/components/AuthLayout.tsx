@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { authHighlights } from "@/mocks/auth";
-import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
+import { useRegisteredUsersStat } from "@/hooks/usePublicStats";
 
 type AuthLayoutProps = {
   eyebrow: string;
@@ -17,8 +17,8 @@ const otherPanelStats = [
 ];
 
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }: AuthLayoutProps) {
-  // Nombre réel de profils financiers, mis à jour en direct.
-  const panelStats = [useFinancialProfilesStat(), ...otherPanelStats];
+  // Nombre réel d'utilisateurs inscrits, mis à jour en direct.
+  const panelStats = [useRegisteredUsersStat(), ...otherPanelStats];
   return (
     <div className="grid min-h-screen w-full grid-cols-1 bg-background-50 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)]">
       <aside className="relative hidden overflow-hidden bg-primary-950 lg:flex lg:flex-col lg:justify-between lg:gap-6 lg:p-10 xl:p-12">

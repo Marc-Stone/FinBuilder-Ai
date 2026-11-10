@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { heroStats } from "@/mocks/landing";
-import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
+import { useRegisteredUsersStat } from "@/hooks/usePublicStats";
 import AnimatedStat from "@/components/base/AnimatedStat";
 import Reveal from "@/components/base/Reveal";
 import HeroBackdrop from "@/pages/home/components/HeroBackdrop";
 
 export default function Hero() {
-  // Premier chiffre : nombre réel de profils financiers, mis à jour en direct.
-  const profilesStat = useFinancialProfilesStat();
-  const stats = [profilesStat, ...heroStats.slice(1)];
+  // Premier chiffre : nombre réel d'utilisateurs inscrits, mis à jour en direct.
+  const usersStat = useRegisteredUsersStat();
+  const stats = [usersStat, ...heroStats.slice(1)];
 
   return (
     <section className="relative w-full overflow-hidden">

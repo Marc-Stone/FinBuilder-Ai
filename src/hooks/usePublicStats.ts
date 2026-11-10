@@ -25,17 +25,17 @@ export function usePublicStats(): State {
 }
 
 /**
- * Statistique « profils financiers » prête à afficher.
+ * Statistique « utilisateurs inscrits » prête à afficher (nombre réel de comptes).
  * Sans données (fonction absente, hors ligne), on garde l'ancien libellé : 6 types de profils couverts.
  */
-export function useFinancialProfilesStat(): { value: string; label: string } {
+export function useRegisteredUsersStat(): { value: string; label: string } {
   const { status, stats } = usePublicStats();
   if (status === "ready") {
     return {
-      value: new Intl.NumberFormat("fr-FR").format(stats.financialProfiles),
-      label: stats.financialProfiles > 1 ? "profils financiers créés" : "profil financier créé",
+      value: new Intl.NumberFormat("fr-FR").format(stats.users),
+      label: stats.users > 1 ? "utilisateurs inscrits" : "utilisateur inscrit",
     };
   }
-  if (status === "loading") return { value: "…", label: "profils financiers créés" };
+  if (status === "loading") return { value: "…", label: "utilisateurs inscrits" };
   return { value: "6", label: "profils financiers couverts" };
 }

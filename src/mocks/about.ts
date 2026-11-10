@@ -1,6 +1,6 @@
 export const aboutStats = [
   { value: "2026", label: "Année de création" },
-  /* Remplacé en direct par le nombre réel de profils financiers (voir AboutHero). */
+  /* Remplacé en direct par le nombre réel d'utilisateurs inscrits (voir AboutHero). */
   { value: "6", label: "Profils financiers couverts" },
   { value: "14", label: "Modules inclus" },
   { value: "1", label: "Fondateur · Abidjan" },

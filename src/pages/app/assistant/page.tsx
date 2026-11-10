@@ -14,6 +14,8 @@ import {
   type AssistantDraft,
 } from "@/lib/assistant";
 import AssistantPlanCard from "@/pages/app/assistant/components/AssistantPlanCard";
+import AssistantMessageText from "@/pages/app/assistant/components/AssistantMessageText";
+import { askCoachAi, type AiTurn } from "@/lib/assistantAi";
 import { useFinancialProfile } from "@/hooks/useFinancialProfile";
 import {
   getFinancialProfileBlueprint,
@@ -33,7 +35,7 @@ const GOAL_SELECT =
 const greeting: ChatMessage = {
   id: "welcome",
   role: "assistant",
-  text: "Bonjour, je suis votre assistant FinBuilder. Dites-moi ce que vous voulez accomplir, par exemple « je veux acheter une maison » : je vous proposerai d'abord l'objectif (la destination), puis le projet qui organise le budget pour y arriver.",
+  text: "Bonjour, je suis votre assistant FinBuilder. Dites-moi ce que vous voulez accomplir, par exemple « je veux acheter une maison » : je vous proposerai d'abord l'objectif (la destination), puis le projet qui organise le budget pour y arriver. Vous pouvez aussi me poser vos questions d'argent : budget, épargne, dettes, imprévus…",
 };
 
 function buildWelcome(blueprint: FinancialProfileBlueprint | null): ChatMessage {
@@ -41,7 +43,7 @@ function buildWelcome(blueprint: FinancialProfileBlueprint | null): ChatMessage 
   return {
     id: "welcome",
     role: "assistant",
-    text: `Bonjour, je suis votre coach FinBuilder. Votre profil ${blueprint.label} est actif : ${blueprint.advice} Dites-moi ce que vous voulez accomplir, par exemple « ${blueprint.assistantSuggestions[0]} » : je vous proposerai l'objectif, puis le projet qui organise le budget pour y arriver.`,
+    text: `Bonjour, je suis votre coach FinBuilder. Votre profil ${blueprint.label} est actif : ${blueprint.advice} Dites-moi ce que vous voulez accomplir, par exemple « ${blueprint.assistantSuggestions[0]} » : je vous proposerai l'objectif, puis le projet qui organise le budget pour y arriver. Vous pouvez aussi me poser toutes vos questions d'argent.`,
   };
 }
 
@@ -160,40 +162,51 @@ export default function AssistantPage() {
     setMessages((current) => [...current, { id: newId(), role: "assistant", text }]);
   };
 
+  const defaultHints = () =>
+    blueprint?.assistantSuggestions.length ? blueprint.assistantSuggestions : assistantSuggestions;
+
   const handleSend = (raw?: string) => {
     const text = (raw ?? input).trim();
     if (!text || thinking) return;
 
-    setMessages((current) => [...current, { id: newId(), role: "user", text }]);
+    const userMessage: ChatMessage = { id: newId(), role: "user", text };
+    const history: AiTurn[] = [...messages, userMessage]
+      .filter((message) => message.id !== "welcome")
+      .map((message) => ({ role: message.role, content: message.text }));
+
+    setMessages((current) => [...current, userMessage]);
     setInput("");
     setThinking(true);
 
-    const timer = window.setTimeout(() => {
-      const analysis = analyzeRequest(text, {
-        capacity,
-        devise,
-        profile: blueprint ? { label: blueprint.label, advice: blueprint.advice } : null,
-      });
-      setMessages((current) => [
-        ...current,
-        {
-          id: newId(),
-          role: "assistant",
-          text: analysis.reply,
-          draft: analysis.draft ?? undefined,
-        },
-      ]);
-      setHints(
-        analysis.hints.length > 0
-          ? analysis.hints
-          : blueprint?.assistantSuggestions.length
-            ? blueprint.assistantSuggestions
-            : assistantSuggestions,
-      );
-      setThinking(false);
-    }, 620);
+    const analysis = analyzeRequest(text, {
+      capacity,
+      devise,
+      profile: blueprint ? { label: blueprint.label, advice: blueprint.advice } : null,
+    });
 
-    timers.current.push(timer);
+    // 1. Un projet reconnu (maison, mariage, business…) : plan chiffré avec création en un clic.
+    if (analysis.draft) {
+      const timer = window.setTimeout(() => {
+        setMessages((current) => [
+          ...current,
+          { id: newId(), role: "assistant", text: analysis.reply, draft: analysis.draft ?? undefined },
+        ]);
+        setHints(analysis.hints.length > 0 ? analysis.hints : defaultHints());
+        setThinking(false);
+      }, 620);
+      timers.current.push(timer);
+      return;
+    }
+
+    // 2. Toute autre question : réponse libre du coach IA (repli sur le message guidé si indisponible).
+    void askCoachAi(history, blueprint?.label).then((result) => {
+      let reply = analysis.reply;
+      if ("reply" in result) reply = result.reply;
+      else if (result.reason !== "not_configured") reply = result.message;
+      setMessages((current) => [...current, { id: newId(), role: "assistant", text: reply }]);
+      setHints(analysis.hints.length > 0 ? analysis.hints : defaultHints());
+      setThinking(false);
+    });
   };
 
   const insertGoal = async (draft: AssistantDraft) => {
@@ -445,13 +458,13 @@ export default function AssistantPage() {
                       Assistant
                     </p>
                   )}
-                  <p
-                    className={`text-xs leading-relaxed ${
-                      message.role === "user" ? "text-background-50" : "text-foreground-800"
-                    }`}
-                  >
-                    {message.text}
-                  </p>
+                  {message.role === "assistant" ? (
+                    <AssistantMessageText text={message.text} />
+                  ) : (
+                    <p className="whitespace-pre-line text-xs leading-relaxed text-background-50">
+                      {message.text}
+                    </p>
+                  )}
 
                   {message.role === "assistant" && (
                     <p className="mt-2 border-t border-background-200/70 pt-2 text-[10px] leading-relaxed text-foreground-500">
@@ -485,7 +498,7 @@ export default function AssistantPage() {
                     />
                   ))}
                   <span className="ml-1 text-[10px] font-medium text-foreground-500">
-                    Analyse de votre phrase…
+                    Le coach réfléchit…
                   </span>
                 </div>
               </div>
@@ -523,9 +536,9 @@ export default function AssistantPage() {
                 name="message"
                 type="text"
                 value={input}
-                maxLength={220}
+                maxLength={600}
                 onChange={(event) => setInput(event.target.value)}
-                placeholder="Ex. : je veux acheter une maison à 15 millions dans 3 ans"
+                placeholder="Posez une question ou décrivez un projet…"
                 className="box-border h-10 w-full min-w-0 rounded-md border border-background-300 bg-background-50 px-3.5 text-sm text-foreground-950 transition-colors placeholder:text-foreground-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
               />
               <button

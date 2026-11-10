@@ -16,8 +16,8 @@
  */
 
 /* Remplacés au build par le plugin Vite « finbuilder-pwa » (vite.config.ts). */
-const BUILD_ID = "a86fd53323ca";
-const BUILD_PRECACHE = ["assets/browser-2wC6gP4q.js","assets/index-CztP5vwm.css","assets/index-DI5Ol80u.js","assets/jsx-runtime-DApVmHJR.js","assets/preload-helper-7y9sWmk5.js","assets/rolldown-runtime-BWaJ3C7D.js","assets/supabaseClient-1DRJYh-V.js"];
+const BUILD_ID = "0978a7184043";
+const BUILD_PRECACHE = ["assets/browser-2wC6gP4q.js","assets/index-JxwsSVFu.css","assets/index-hm2tFm7U.js","assets/jsx-runtime-DApVmHJR.js","assets/preload-helper-7y9sWmk5.js","assets/rolldown-runtime-BWaJ3C7D.js","assets/supabaseClient-1DRJYh-V.js"];
 
 const CACHE_PREFIX = "finbuilder";
 const SHELL_CACHE = `${CACHE_PREFIX}-shell-${BUILD_ID}`;

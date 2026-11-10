@@ -11,7 +11,25 @@ export type AiResult =
  * La clé du fournisseur d'IA reste côté serveur ; le contexte financier est
  * calculé côté serveur à partir des données de l'utilisateur (RLS).
  */
+const CLIENT_TIMEOUT_MS = 35_000;
+
 export async function askCoachAi(history: AiTurn[], profileLabel?: string): Promise<AiResult> {
+  // Filet de sécurité : l'indicateur « Le coach réfléchit… » ne doit jamais rester bloqué.
+  const timeout = new Promise<AiResult>((resolve) =>
+    window.setTimeout(
+      () =>
+        resolve({
+          ok: false,
+          reason: "busy",
+          message: "Le coach IA met trop de temps à répondre. Réessayez dans un instant.",
+        }),
+      CLIENT_TIMEOUT_MS,
+    ),
+  );
+  return Promise.race([callCoachAi(history, profileLabel), timeout]);
+}
+
+async function callCoachAi(history: AiTurn[], profileLabel?: string): Promise<AiResult> {
   try {
     const { data, error } = await supabase.functions.invoke("assistant-chat", {
       body: { messages: history.slice(-10), profileLabel: profileLabel ?? "" },

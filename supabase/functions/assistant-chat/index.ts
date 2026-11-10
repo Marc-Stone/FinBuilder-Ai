@@ -199,6 +199,8 @@ ${context}`;
     const aiResponse = await fetch(`${aiBaseUrl}/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
+      // Le fournisseur ne doit jamais bloquer l'utilisateur : 25 s maximum.
+      signal: AbortSignal.timeout(25_000),
       body: JSON.stringify({
         model: aiModel,
         messages: [{ role: "system", content: systemPrompt }, ...history],
@@ -215,11 +217,15 @@ ${context}`;
 
     const data = await aiResponse.json();
     const reply: string = data?.choices?.[0]?.message?.content?.trim?.() ?? "";
-    if (!reply) return json({ error: "provider_error" }, 502);
+    if (!reply) {
+      console.error("[assistant-chat] réponse vide", JSON.stringify(data).slice(0, 300));
+      return json({ error: "provider_error" }, 502);
+    }
 
     return json({ reply });
   } catch (error) {
-    console.error("[assistant-chat]", error);
-    return json({ error: "provider_error" }, 502);
+    const timedOut = error instanceof DOMException && error.name === "TimeoutError";
+    console.error("[assistant-chat]", timedOut ? "délai dépassé (25 s)" : error);
+    return json({ error: timedOut ? "provider_busy" : "provider_error" }, 504);
   }
 });

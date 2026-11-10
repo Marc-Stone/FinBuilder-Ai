@@ -92,6 +92,13 @@ export default [
       'no-undef': 'error',
     },
   },
+  // Hook files pair a context Provider with its consumer hook by design.
+  {
+    files: ['src/hooks/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   // Only enforce this rule for the router config file to avoid false positives elsewhere.
   {
     files: ['src/router/config.tsx'],

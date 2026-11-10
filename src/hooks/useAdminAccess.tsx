@@ -64,7 +64,7 @@ export function AdminAccessProvider({ children }: { children: ReactNode }) {
   const reload = useCallback(() => setReloadKey((value) => value + 1), []);
 
   const fullAccess = !roleId && (member || profile?.role === "admin");
-  const permissions = role?.permissions ?? [];
+  const permissions = useMemo(() => role?.permissions ?? [], [role]);
 
   const can = useCallback(
     (permission: string) => fullAccess || permissions.includes(permission),

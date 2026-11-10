@@ -124,7 +124,7 @@ export default function EducationPage() {
       .filter((fiche) => readIds.includes(fiche.id))
       .forEach((fiche) => fiche.modules.forEach((module) => set.add(module)));
     return set.size;
-  }, [readIds]);
+  }, [fiches, readIds]);
 
   const averageMinutes = Math.round(
     fiches.length > 0

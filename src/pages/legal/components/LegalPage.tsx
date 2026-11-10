@@ -124,26 +124,29 @@ export default function LegalPage({
               </div>
 
               <aside className="space-y-4 lg:col-span-4">
-                <div className="rounded-lg border border-accent-200 bg-accent-50/70 p-4 md:p-5">
-                  <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-accent-900">
-                    <i className="ri-error-warning-line text-sm" />
-                    À compléter avant publication
-                  </p>
-                  <ul className="mt-2.5 space-y-1.5">
-                    {pending.map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-start gap-2 text-xs leading-relaxed text-accent-900"
-                      >
-                        <i className="ri-subtract-line mt-0.5 text-xs" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-2.5 text-[11px] leading-relaxed text-accent-900/80">
-                    Ces informations sont indispensables avant une mise en ligne publique définitive.
-                  </p>
-                </div>
+                {/* Encadré affiché uniquement tant qu'il reste des informations à compléter. */}
+                {pending.length > 0 && (
+                  <div className="rounded-lg border border-accent-200 bg-accent-50/70 p-4 md:p-5">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-accent-900">
+                      <i className="ri-error-warning-line text-sm" />
+                      À compléter avant publication
+                    </p>
+                    <ul className="mt-2.5 space-y-1.5">
+                      {pending.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-start gap-2 text-xs leading-relaxed text-accent-900"
+                        >
+                          <i className="ri-subtract-line mt-0.5 text-xs" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-2.5 text-[11px] leading-relaxed text-accent-900/80">
+                      Ces informations sont indispensables avant une mise en ligne publique définitive.
+                    </p>
+                  </div>
+                )}
 
                 <div className="rounded-lg border border-background-200 bg-background-50 p-4 md:p-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground-500">

@@ -3,8 +3,20 @@ import AmbientGlow from "@/components/base/AmbientGlow";
 import AnimatedStat from "@/components/base/AnimatedStat";
 import Reveal from "@/components/base/Reveal";
 import { aboutStats } from "@/mocks/about";
+import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
 
 export default function AboutHero() {
+  // « Profils financiers » : nombre réel, mis à jour à chaque ajout ou suppression de compte.
+  const profilesStat = useFinancialProfilesStat();
+  const stats = aboutStats.map((stat, index) =>
+    index === 1
+      ? {
+          value: profilesStat.value,
+          label: profilesStat.label.charAt(0).toUpperCase() + profilesStat.label.slice(1),
+        }
+      : stat,
+  );
+
   return (
     <section className="surface-halo relative w-full overflow-hidden border-b border-background-200 bg-background-100 pb-12 pt-24 md:pb-16 md:pt-32">
       <AmbientGlow />
@@ -48,11 +60,11 @@ export default function AboutHero() {
         </Reveal>
 
         <div className="mx-auto mt-10 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4">
-          {aboutStats.map((stat, index) => (
-            <Reveal key={stat.label} delay={index * 90} distance={18}>
+          {stats.map((stat, index) => (
+            <Reveal key={index} delay={index * 90} distance={18}>
               <div className="rounded-md border border-background-200 bg-background-50 px-4 py-3 text-center transition-all duration-300 hover:-translate-y-1 hover:border-primary-200">
                 <p className="text-lg font-semibold text-foreground-950">
-                  {/^\d{4}$/.test(stat.value) ? stat.value : <AnimatedStat value={stat.value} />}
+                  {index === 0 ? stat.value : <AnimatedStat value={stat.value} />}
                 </p>
                 <p className="mt-0.5 text-[11px] leading-snug text-foreground-500">{stat.label}</p>
               </div>

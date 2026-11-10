@@ -1,10 +1,15 @@
 import { Link } from "react-router-dom";
 import { heroStats } from "@/mocks/landing";
+import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
 import AnimatedStat from "@/components/base/AnimatedStat";
 import Reveal from "@/components/base/Reveal";
 import HeroBackdrop from "@/pages/home/components/HeroBackdrop";
 
 export default function Hero() {
+  // Premier chiffre : nombre réel de profils financiers, mis à jour en direct.
+  const profilesStat = useFinancialProfilesStat();
+  const stats = [profilesStat, ...heroStats.slice(1)];
+
   return (
     <section className="relative w-full overflow-hidden">
       <div className="absolute inset-0">
@@ -72,9 +77,9 @@ export default function Hero() {
 
         <Reveal delay={120} distance={34} className="mx-auto mt-14 w-full max-w-5xl">
           <div className="grid w-full grid-cols-1 gap-px overflow-hidden rounded-lg border border-background-50/15 bg-background-50/10 sm:grid-cols-3">
-            {heroStats.map((stat, index) => (
+            {stats.map((stat, index) => (
               <div
-                key={stat.label}
+                key={index}
                 className="group bg-foreground-950/40 px-4 py-5 text-center backdrop-blur-sm transition-colors duration-300 hover:bg-foreground-950/55 md:px-6"
                 style={{ transitionDelay: `${index * 40}ms` }}
               >

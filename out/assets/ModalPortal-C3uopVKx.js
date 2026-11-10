@@ -1,0 +1,1 @@
+import{a as e}from"./rolldown-runtime-BWaJ3C7D.js";import{n as t}from"./jsx-runtime-DApVmHJR.js";import{dt as n}from"./index-CNQFU0-c.js";var r=e(t(),1),i=e(n(),1);function a({children:e}){let[t,n]=(0,r.useState)(null);return(0,r.useEffect)(()=>{typeof document<`u`&&n(document.body)},[]),t?(0,i.createPortal)(e,t):null}export{a as t};

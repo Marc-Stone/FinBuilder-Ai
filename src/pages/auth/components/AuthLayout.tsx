@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { authHighlights } from "@/mocks/auth";
+import { useFinancialProfilesStat } from "@/hooks/usePublicStats";
 
 type AuthLayoutProps = {
   eyebrow: string;
@@ -10,13 +11,14 @@ type AuthLayoutProps = {
   footer?: ReactNode;
 };
 
-const panelStats = [
-  { value: "6", label: "profils financiers couverts" },
+const otherPanelStats = [
   { value: "14", label: "modules inclus" },
   { value: "Aucune", label: "connexion bancaire requise" },
 ];
 
 export default function AuthLayout({ eyebrow, title, subtitle, children, footer }: AuthLayoutProps) {
+  // Nombre réel de profils financiers, mis à jour en direct.
+  const panelStats = [useFinancialProfilesStat(), ...otherPanelStats];
   return (
     <div className="grid min-h-screen w-full grid-cols-1 bg-background-50 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)]">
       <aside className="relative hidden overflow-hidden bg-primary-950 lg:flex lg:flex-col lg:justify-between lg:gap-6 lg:p-10 xl:p-12">
@@ -77,8 +79,8 @@ export default function AuthLayout({ eyebrow, title, subtitle, children, footer 
           </div>
 
           <div className="mt-7 grid grid-cols-3 gap-3 border-y border-background-50/15 py-4">
-            {panelStats.map((stat) => (
-              <div key={stat.value} className="min-w-0">
+            {panelStats.map((stat, index) => (
+              <div key={index} className="min-w-0">
                 <p
                   className="text-base font-semibold leading-none text-background-50"
                   style={{ fontFamily: "var(--font-heading)" }}

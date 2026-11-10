@@ -1,5 +1,6 @@
 export const aboutStats = [
-  { value: "2024", label: "Année de création" },
+  { value: "2026", label: "Année de création" },
+  /* Remplacé en direct par le nombre réel de profils financiers (voir AboutHero). */
   { value: "6", label: "Profils financiers couverts" },
   { value: "14", label: "Modules inclus" },
   { value: "1", label: "Fondateur · Abidjan" },
@@ -30,17 +31,17 @@ export const aboutValues = [
 
 export const aboutTimeline = [
   {
-    year: "2024",
+    year: "Début 2026",
     title: "Un tableur, un proche, un constat",
     text: "En aidant un proche à préparer un apport immobilier, une soirée entière est passée à refaire les mêmes calculs. L'idée est née là : rendre cette lecture accessible à tous.",
   },
   {
-    year: "Début 2025",
+    year: "Printemps 2026",
     title: "Les premiers tests à Abidjan",
     text: "Soixante personnes ont utilisé une première version pendant trois mois. Le retour le plus fréquent : « je ne savais pas que mes abonnements coûtaient autant ».",
   },
   {
-    year: "Mi-2025",
+    year: "Été 2026",
     title: "L'assistant et les simulations",
     text: "La possibilité de poser une question en langage naturel et de comparer deux scénarios avant de décider a été ajoutée.",
   },

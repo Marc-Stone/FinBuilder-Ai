@@ -12,6 +12,7 @@
  *   AI_BASE_URL  (défaut : Google Gemini)
  *   AI_MODEL     (défaut : gemini-3.8-flash)
  *   AI_DAILY_LIMIT (défaut : 30 messages par utilisateur et par jour)
+ *   AI_REASONING_EFFORT (Gemini uniquement, défaut : low — réponses rapides ; minimal | low | medium | high)
  *
  * Sécurité / confidentialité :
  *   - Session obligatoire ; les données sont lues avec le jeton de l'utilisateur (RLS appliquée).
@@ -72,6 +73,10 @@ Deno.serve(async (req: Request) => {
   const aiBaseUrl = (Deno.env.get("AI_BASE_URL") || "https://generativelanguage.googleapis.com/v1beta/openai").replace(/\/+$/, "");
   const aiModel = Deno.env.get("AI_MODEL") || "gemini-3.8-flash";
   const dailyLimit = Number(Deno.env.get("AI_DAILY_LIMIT") || "30");
+  // Gemini « réfléchit » avant de répondre : on limite cette réflexion pour rester rapide
+  // (sinon la fonction peut dépasser la durée autorisée par Supabase → erreur 546).
+  const isGemini = aiBaseUrl.includes("generativelanguage.googleapis.com");
+  const reasoningEffort = Deno.env.get("AI_REASONING_EFFORT") || "low";
 
   if (!supabaseUrl || !anonKey || !serviceKey) {
     return json({ error: "Configuration serveur incomplete." }, 500);
@@ -205,7 +210,9 @@ ${context}`;
         model: aiModel,
         messages: [{ role: "system", content: systemPrompt }, ...history],
         temperature: 0.5,
-        max_tokens: 600,
+        // Marge suffisante : chez Gemini, la réflexion consomme une partie de ce budget.
+        max_tokens: isGemini ? 2000 : 600,
+        ...(isGemini ? { reasoning_effort: reasoningEffort } : {}),
       }),
     });
 

@@ -10,9 +10,9 @@
  * Secrets (supabase secrets set ...) :
  *   AI_API_KEY   (obligatoire, jamais côté navigateur)
  *   AI_BASE_URL  (défaut : Google Gemini)
- *   AI_MODEL     (défaut : gemini-3.8-flash)
+ *   AI_MODEL     (défaut : gemini-3.5-flash-lite — le plus rapide ; gemini-3.8-flash = plus fin mais plus lent)
  *   AI_DAILY_LIMIT (défaut : 30 messages par utilisateur et par jour)
- *   AI_REASONING_EFFORT (Gemini uniquement, défaut : low — réponses rapides ; minimal | low | medium | high)
+ *   AI_REASONING_EFFORT (facultatif, Gemini : minimal | low | medium | high — non envoyé si absent)
  *
  * Sécurité / confidentialité :
  *   - Session obligatoire ; les données sont lues avec le jeton de l'utilisateur (RLS appliquée).
@@ -71,12 +71,12 @@ Deno.serve(async (req: Request) => {
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const aiKey = Deno.env.get("AI_API_KEY");
   const aiBaseUrl = (Deno.env.get("AI_BASE_URL") || "https://generativelanguage.googleapis.com/v1beta/openai").replace(/\/+$/, "");
-  const aiModel = Deno.env.get("AI_MODEL") || "gemini-3.8-flash";
+  const aiModel = Deno.env.get("AI_MODEL") || "gemini-3.5-flash-lite";
   const dailyLimit = Number(Deno.env.get("AI_DAILY_LIMIT") || "30");
-  // Gemini « réfléchit » avant de répondre : on limite cette réflexion pour rester rapide
-  // (sinon la fonction peut dépasser la durée autorisée par Supabase → erreur 546).
+  // Réglage facultatif de la « réflexion » Gemini : envoyé uniquement s'il est configuré,
+  // car tous les modèles ne l'acceptent pas.
   const isGemini = aiBaseUrl.includes("generativelanguage.googleapis.com");
-  const reasoningEffort = Deno.env.get("AI_REASONING_EFFORT") || "low";
+  const reasoningEffort = Deno.env.get("AI_REASONING_EFFORT") || "";
 
   if (!supabaseUrl || !anonKey || !serviceKey) {
     return json({ error: "Configuration serveur incomplete." }, 500);
@@ -200,6 +200,7 @@ Si la question n'a aucun rapport avec l'argent, la gestion ou les projets de vie
 Situation de l'utilisateur :
 ${context}`;
 
+  const startedAt = Date.now();
   try {
     const aiResponse = await fetch(`${aiBaseUrl}/chat/completions`, {
       method: "POST",
@@ -212,9 +213,11 @@ ${context}`;
         temperature: 0.5,
         // Marge suffisante : chez Gemini, la réflexion consomme une partie de ce budget.
         max_tokens: isGemini ? 2000 : 600,
-        ...(isGemini ? { reasoning_effort: reasoningEffort } : {}),
+        ...(isGemini && reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
       }),
     });
+
+    console.log(`[assistant-chat] ${aiModel} → HTTP ${aiResponse.status} en ${Date.now() - startedAt} ms`);
 
     if (!aiResponse.ok) {
       const status = aiResponse.status;
@@ -232,7 +235,11 @@ ${context}`;
     return json({ reply });
   } catch (error) {
     const timedOut = error instanceof DOMException && error.name === "TimeoutError";
-    console.error("[assistant-chat]", timedOut ? "délai dépassé (25 s)" : error);
+    console.error(
+      "[assistant-chat]",
+      aiModel,
+      timedOut ? `délai dépassé (${Date.now() - startedAt} ms)` : error,
+    );
     return json({ error: timedOut ? "provider_busy" : "provider_error" }, 504);
   }
 });

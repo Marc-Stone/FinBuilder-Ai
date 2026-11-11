@@ -48,6 +48,16 @@ par le logo officiel, puis régénérer les PNG aux mêmes tailles et mêmes nom
    Types : `budget_depasse`, `objectif_atteint`, `rappel_financier`, `conseil_coach`.
    Les textes sont génériques (aucun montant sur l'écran verrouillé).
 
+### Envois automatiques
+
+Migration `20261111000100_push_automations.sql` + fonction Edge `push-scheduler`
+(déployée avec **Verify JWT désactivé** : elle vérifie un secret conservé dans Vault).
+
+- **Budget dépassé** : tâche pg_cron `push-budget-soir`, tous les soirs à 19 h UTC, selon la
+  règle de l'utilisateur (50/30/20 ou 80/20). Une notification par bloc et par mois.
+- **Objectif atteint** : trigger `goals_notify_reached` au passage à 100 %. Une seule fois par objectif.
+- Anti-doublon : table `push_log` (aucune donnée financière, accès rôle service uniquement).
+
 iOS : le push fonctionne à partir d'iOS 16.4, uniquement depuis l'app installée sur l'écran d'accueil.
 
 ## Hébergement

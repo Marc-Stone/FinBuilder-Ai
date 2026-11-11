@@ -78,7 +78,10 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Impossible de verifier vos droits." }, 500);
     }
 
-    let allowed = callerProfile?.role === "admin" && !callerProfile?.admin_role_id;
+    const callerIsOwner = callerProfile?.role === "admin" && !callerProfile?.admin_role_id;
+    let allowed = callerIsOwner;
+    // Permissions du membre délégué : il ne pourra jamais accorder plus que ce qu'il possède.
+    let callerPermissions: string[] = [];
 
     if (!allowed && callerProfile?.admin_role_id) {
       const { data: callerRole } = await adminClient
@@ -86,8 +89,13 @@ Deno.serve(async (req: Request) => {
         .select("permissions")
         .eq("id", callerProfile.admin_role_id)
         .maybeSingle();
-      allowed = parsePermissions(callerRole?.permissions).includes("security");
+      callerPermissions = parsePermissions(callerRole?.permissions);
+      allowed = callerPermissions.includes("security");
     }
+
+    // Vrai si un rôle contient au moins une permission que l'appelant n'a pas.
+    const exceedsCaller = (permissions: string[]) =>
+      !callerIsOwner && permissions.some((permission) => !callerPermissions.includes(permission));
 
     if (!allowed) {
       return json(
@@ -149,10 +157,25 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Un membre délégué ne peut pas modifier l'accès d'un membre plus puissant que lui.
+    if (!callerIsOwner && targetProfile.admin_role_id) {
+      const { data: currentRole } = await adminClient
+        .from("admin_roles")
+        .select("permissions")
+        .eq("id", targetProfile.admin_role_id)
+        .maybeSingle();
+      if (exceedsCaller(parsePermissions(currentRole?.permissions))) {
+        return json(
+          { error: "Ce membre dispose de permissions que vous n'avez pas : seul l'administrateur principal peut modifier son acces." },
+          403,
+        );
+      }
+    }
+
     if (roleId) {
       const { data: roleRow, error: roleError } = await adminClient
         .from("admin_roles")
-        .select("id, nom")
+        .select("id, nom, permissions")
         .eq("id", roleId)
         .maybeSingle();
 
@@ -162,6 +185,14 @@ Deno.serve(async (req: Request) => {
 
       if (!roleRow) {
         return json({ error: "Ce role n'existe plus." }, 404);
+      }
+
+      // Empêche l'auto-promotion via un second compte : pas de rôle plus puissant que le sien.
+      if (exceedsCaller(parsePermissions(roleRow.permissions))) {
+        return json(
+          { error: "Ce role contient des permissions que vous n'avez pas : seul l'administrateur principal peut l'attribuer." },
+          403,
+        );
       }
     }
 

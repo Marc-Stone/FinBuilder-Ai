@@ -150,6 +150,25 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Un membre délégué ne peut pas reprendre le compte d'un autre membre de la console
+    // (sinon il récupérerait ses permissions) : réservé à l'administrateur principal.
+    if (!isOwner) {
+      const { data: targetMembership } = await adminClient
+        .from("admins")
+        .select("user_id")
+        .eq("user_id", targetId)
+        .maybeSingle();
+      if (targetProfile.admin_role_id || targetMembership) {
+        return json(
+          {
+            error:
+              "Le mot de passe d'un membre de la console ne peut etre reinitialise que par l'administrateur principal.",
+          },
+          403,
+        );
+      }
+    }
+
     const { error: updateError } = await adminClient.auth.admin.updateUserById(targetId, {
       password,
     });
